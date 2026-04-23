@@ -1,0 +1,1241 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Herramienta práctica U4 · Clasificación de fraude</title>
+  <style>
+    :root {
+      --bg: #eef3f7;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --muted: #60758d;
+      --line: #ced9e5;
+      --accent: #1e6de0;
+      --accent-soft: #dfeafe;
+      --accent-2: #0f8a6c;
+      --code-bg: #edf1f5;
+      --code-ink: #203247;
+      --warm: #f4efe4;
+      --shadow: 0 16px 50px rgba(23, 50, 77, 0.10);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(30,109,224,0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(15,138,108,0.12), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(206, 217, 229, 0.95);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px 30px 34px;
+      margin-bottom: 24px;
+    }
+
+    .hero-copy {
+      max-width: 100%;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.08;
+      color: var(--ink);
+    }
+
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(2.4rem, 4.2vw, 3.9rem);
+      max-width: 100%;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .lead {
+      margin: 18px 0 0;
+      max-width: 78ch;
+      font-size: 1.2rem;
+      color: var(--muted);
+    }
+
+    .byline {
+      margin: 12px 0 0;
+      font-size: 0.98rem;
+      color: var(--muted);
+    }
+
+    .byline a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .byline a:hover {
+      text-decoration: underline;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .cta.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .panel {
+      padding: 26px;
+      margin-bottom: 22px;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fdfefe, #f5f8fb);
+    }
+
+    .mini-card h3 {
+      font-size: 1.08rem;
+      margin-bottom: 10px;
+    }
+
+    .route-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .route-item {
+      display: none;
+    }
+
+    .route-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .route-btn {
+      display: inline-flex;
+      cursor: pointer;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .route-btn.active {
+      background: var(--accent-soft);
+      border-color: rgba(30, 109, 224, 0.28);
+      color: var(--accent);
+    }
+
+    .route-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.84rem;
+    }
+
+    .route-label {
+      font-size: 0.96rem;
+    }
+
+    .route-panel {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fdfefe, #f5f8fb);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    ul {
+      margin: 12px 0 0 1.2rem;
+      padding: 0;
+    }
+
+    .step-section {
+      padding-top: 10px;
+    }
+
+    .step-section + .step-section {
+      margin-top: 18px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .step-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--warm);
+      color: #6a5220;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .code-block {
+      margin-top: 14px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border: 1px solid rgba(23, 50, 77, 0.12);
+    }
+
+    .code-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(23, 50, 77, 0.05);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #48627e;
+    }
+
+    .code-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .code-tabs {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .code-tab {
+      border: 1px solid rgba(207, 225, 255, 0.24);
+      background: #fff;
+      color: #48627e;
+      border-radius: 999px;
+      min-height: 32px;
+      padding: 0 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .code-tab.active {
+      background: rgba(255,255,255,0.12);
+      color: var(--accent);
+      border-color: rgba(30, 109, 224, 0.28);
+    }
+
+    .code-copy-btn {
+      border: 1px solid rgba(23, 50, 77, 0.14);
+      background: #fff;
+      color: #48627e;
+      border-radius: 999px;
+      min-height: 32px;
+      padding: 0 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .code-copy-btn.active-state {
+      background: rgba(255,255,255,0.12);
+      color: var(--accent);
+      border-color: rgba(30, 109, 224, 0.28);
+    }
+
+    .code-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 16px 16px;
+    }
+
+    .code-pane {
+      display: none;
+    }
+
+    .code-pane.active {
+      display: block;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      font-size: 0.94rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Consolas", "Menlo", monospace;
+    }
+
+    .code-comment {
+      color: #95a5b5;
+      font-style: italic;
+    }
+
+    .code-string {
+      color: #0f8a6c;
+    }
+
+    .code-keyword {
+      color: #8d46d8;
+      font-weight: 700;
+    }
+
+    .code-fn {
+      color: #1e6de0;
+      font-weight: 700;
+    }
+
+    .result-box {
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #f5fbf9, #ecf8f3);
+      border: 1px solid rgba(15, 138, 108, 0.18);
+    }
+
+    .result-box h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--accent-2);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(15, 138, 108, 0.16);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.35rem;
+      color: var(--ink);
+    }
+
+    .confusion-matrix {
+      display: grid;
+      grid-template-columns: 118px repeat(2, minmax(64px, auto));
+      gap: 6px;
+      align-items: stretch;
+      margin-bottom: 10px;
+    }
+
+    .matrix-axis-corner,
+    .matrix-axis-top,
+    .matrix-axis-side,
+    .matrix-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(23, 50, 77, 0.12);
+    }
+
+    .matrix-axis-corner {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .matrix-axis-top,
+    .matrix-axis-side {
+      background: #edf4fb;
+      color: #48627e;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .matrix-cell {
+      background: #f4f8fc;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .status-pill.safe {
+      background: #edf7f3;
+      color: #0f8a6c;
+      border: 1px solid rgba(15, 138, 108, 0.18);
+    }
+
+    .status-pill.risk {
+      background: #fff0ef;
+      color: #bf3a2b;
+      border: 1px solid rgba(191, 58, 43, 0.18);
+    }
+
+    .table-preview {
+      margin-top: 14px;
+      overflow-x: auto;
+      border: 1px solid rgba(23, 50, 77, 0.08);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .table-preview table {
+      width: 100%;
+      min-width: 620px;
+      border-collapse: collapse;
+      font-size: 0.96rem;
+    }
+
+    .table-preview th,
+    .table-preview td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(23, 50, 77, 0.08);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table-preview th {
+      background: #f5f8fc;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: #f7faff;
+      border-radius: 0 16px 16px 0;
+      color: var(--muted);
+    }
+
+    .prompt-box {
+      margin-top: 16px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fff8f1, #fff0df);
+      border: 1px solid rgba(210, 137, 34, 0.18);
+      padding: 18px;
+    }
+
+    .prompt-box h3 {
+      font-size: 1.18rem;
+      margin-bottom: 8px;
+      color: #7a4b00;
+    }
+
+    .prompt-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .copy-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 75, 0, 0.25);
+      background: #fff;
+      color: #7a4b00;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .copy-btn:active {
+      transform: translateY(1px);
+    }
+
+    .footer-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    @media (max-width: 860px) {
+      .grid-two {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        max-width: 100%;
+        white-space: normal;
+      }
+
+      .route-buttons {
+        gap: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Herramienta práctica · U4</span>
+        <h1>Clasificación de fraude con Python</h1>
+        <p class="lead">
+          Aquí puedes recorrer paso a paso un ejemplo de clasificación de fraude:
+          entender el problema, mirar fragmentos clave de código, ver qué resultados produce cada paso
+          y decidir si quieres seguir trabajando en GitHub, Colab o con una descarga directa.
+        </p>
+        <p class="byline">
+          <strong>Preparado por Melanie Oyarzun</strong><br>
+          <a href="https://moyarzun.netlify.app" target="_blank" rel="noreferrer">moyarzun.netlify.app</a>
+        </p>
+        <div class="cta-row">
+          <a class="cta primary" href="https://github.com/melanieoyarzun/herramientas_aplicadas/blob/main/ejemplo_clasificacion_fraudes.ipynb" target="_blank" rel="noreferrer">Ver en GitHub</a>
+          <a class="cta" href="https://colab.research.google.com/github/melanieoyarzun/herramientas_aplicadas/blob/main/ejemplo_clasificacion_fraudes.ipynb" target="_blank" rel="noreferrer">Abrir en Colab</a>
+          <a class="cta" href="./ejemplo_clasificacion_fraudes.ipynb" download>Descargar Python Notebook</a>
+          <a class="cta" href="./ejemplo_clasificacion_fraudes_R.qmd" download>Descargar R Notebook</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel grid-two">
+      <article class="mini-card">
+        <h2>Qué aprenderás aquí</h2>
+        <ul>
+          <li>Cómo se organiza un problema de clasificación binaria.</li>
+          <li>Qué pasos mínimos siguen un flujo de preparación, entrenamiento y evaluación.</li>
+          <li>Cómo cambia la lectura cuando comparas regresión logística, árbol y clustering.</li>
+        </ul>
+      </article>
+      <article class="mini-card">
+        <h2>Qué encontrarás aquí</h2>
+        <ul>
+          <li><code>Caso</code> claro y problema concreto.</li>
+          <li><code>Paso a paso</code> con fragmentos de código seleccionados.</li>
+          <li><code>Resultados esperados</code> visibles.</li>
+          <li><code>Descargas</code> y una sección final para <code>replicarlo con IA</code>.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Ruta de trabajo</h2>
+      <div class="route-buttons">
+        <button class="route-btn active" type="button" data-route-title="Paso 1. Datos" data-route-body="Aquí se define el problema y se construye una base reproducible para mostrar cómo cambia el flujo cuando la variable objetivo es <code>fraude / no fraude</code>."><span class="route-label">1. Datos</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 2. Preparación" data-route-body="Las variables categóricas se transforman para que ubicación, horario y tipo de transacción puedan ser usados dentro del modelo."><span class="route-label">2. Preparación</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 3. Modelo base" data-route-body="Aquí aparece la primera solución supervisada del flujo: una regresión logística que luego sirve como referencia para comparar otros enfoques."><span class="route-label">3. Modelo base</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 4. Evaluación" data-route-body="En esta parte se mira la matriz de confusión y las métricas del modelo para entender no solo si acierta, sino qué tipo de errores está cometiendo."><span class="route-label">4. Evaluación</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 5. Nuevos casos" data-route-body="Una vez entrenado, el modelo se aplica sobre observaciones nuevas para mostrar un uso predictivo básico."><span class="route-label">5. Nuevos casos</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 6. Comparaciones" data-route-body="El mismo fenómeno se mira también con árbol de decisión y clustering para mostrar que cambiar de método cambia la lectura del problema."><span class="route-label">6. Comparaciones</span></button>
+      </div>
+      <div class="route-panel">
+        <strong id="route-title">Paso 1. Datos</strong>
+        <p id="route-body" style="margin:8px 0 0;">Aquí se define el problema y se construye una base reproducible para mostrar cómo cambia el flujo cuando la variable objetivo es <code>fraude / no fraude</code>.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 1</span>
+          <div class="step-title">Simular el problema</div>
+        </div>
+        <p>
+          El ejemplo parte con un escenario simple: muchas transacciones normales y una fracción menor de casos
+          fraudulentos. Esto no reemplaza un caso real, pero sirve para mostrar la lógica de trabajo con un dataset controlado.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step1-python">Python</button>
+                <button class="code-tab" type="button" data-target="step1-r">R</button>
+              </div>
+              <span>Generación de datos</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step1-python">
+          <pre><code># Importar librerías necesarias
+import numpy as np
+import pandas as pd
+
+np.random.seed(42)
+n_transacciones = 10000
+
+datos_normales = pd.DataFrame({
+    'monto': np.random.normal(loc=50, scale=10, size=n_transacciones),
+    'ubicacion': np.random.choice(['EEUU', 'México', 'Canadá'], size=n_transacciones),
+    'horario': np.random.choice(['día', 'noche'], size=n_transacciones),
+    'tipo': np.random.choice(['compra', 'retiro'], size=n_transacciones),
+    'clase': np.zeros(n_transacciones)
+})
+
+datos_fraudulentos = pd.DataFrame({
+    'monto': np.random.normal(loc=100, scale=20, size=int(n_transacciones * 0.05)),
+    'ubicacion': np.random.choice(['Nigeria', 'Rusia', 'China'], size=int(n_transacciones * 0.05)),
+    'horario': np.random.choice(['día', 'noche'], size=int(n_transacciones * 0.05)),
+    'tipo': np.random.choice(['compra', 'retiro'], size=int(n_transacciones * 0.05)),
+    'clase': np.ones(int(n_transacciones * 0.05))
+})
+
+datos = pd.concat([datos_normales, datos_fraudulentos]).sample(frac=1, random_state=42).reset_index(drop=True)</code></pre>
+          </div>
+          <div class="code-pane" id="step1-r">
+          <pre><code>library(tidyverse)
+set.seed(42)
+
+n_transacciones &lt;- 10000
+
+datos_normales &lt;- tibble(
+  monto = rnorm(n_transacciones, mean = 50, sd = 10),
+  ubicacion = sample(c("EEUU", "México", "Canadá"), n_transacciones, replace = TRUE),
+  horario = sample(c("día", "noche"), n_transacciones, replace = TRUE),
+  tipo = sample(c("compra", "retiro"), n_transacciones, replace = TRUE),
+  clase = 0
+)
+
+datos_fraudulentos &lt;- tibble(
+  monto = rnorm(n_transacciones * 0.05, mean = 100, sd = 20),
+  ubicacion = sample(c("Nigeria", "Rusia", "China"), n_transacciones * 0.05, replace = TRUE),
+  horario = sample(c("día", "noche"), n_transacciones * 0.05, replace = TRUE),
+  tipo = sample(c("compra", "retiro"), n_transacciones * 0.05, replace = TRUE),
+  clase = 1
+)
+
+datos &lt;- bind_rows(datos_normales, datos_fraudulentos) |&gt;
+  slice_sample(prop = 1) |&gt;
+  mutate(clase = factor(if_else(clase == 1, "fraude", "normal")))</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <h4>Qué permite ver este paso</h4>
+          <p>
+            El problema queda formalizado como una tarea de clasificación binaria: cada observación representa
+            una transacción y la variable <code>clase</code> indica si el caso es fraude o no.
+          </p>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr>
+                <th>monto</th>
+                <th>ubicacion</th>
+                <th>horario</th>
+                <th>tipo</th>
+                <th>clase</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>34.175720</td><td>México</td><td>día</td><td>retiro</td><td>0.0</td></tr>
+              <tr><td>51.767621</td><td>México</td><td>noche</td><td>compra</td><td>0.0</td></tr>
+              <tr><td>52.317309</td><td>México</td><td>noche</td><td>retiro</td><td>0.0</td></tr>
+              <tr><td>69.669170</td><td>México</td><td>noche</td><td>retiro</td><td>0.0</td></tr>
+              <tr><td>42.681427</td><td>EEUU</td><td>noche</td><td>compra</td><td>0.0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 2</span>
+          <div class="step-title">Preparar variables para el modelo</div>
+        </div>
+        <p>
+          Como el dataset incluye variables categóricas, el flujo las convierte a variables binarias.
+          Esto hace visible una idea importante de la unidad: antes de modelar, casi siempre hay que decidir
+          cómo representar la información.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step2-python">Python</button>
+                <button class="code-tab" type="button" data-target="step2-r">R</button>
+              </div>
+              <span>Preprocesamiento</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step2-python">
+          <pre><code># Codificar las variables categóricas usando la técnica de codificación one-hot
+datos_codificados = pd.get_dummies(datos, columns=['ubicacion', 'horario', 'tipo'])
+datos_codificados.head()</code></pre>
+          </div>
+          <div class="code-pane" id="step2-r">
+          <pre><code>library(tidymodels)
+
+fraude_receta &lt;- recipe(clase ~ ., data = datos_entrenamiento) |&gt;
+  step_dummy(all_nominal_predictors())
+
+fraude_receta</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <h4>Resultado esperado</h4>
+          <p>
+            El dataset deja de tener columnas como <code>ubicacion</code> o <code>tipo</code> como texto y pasa
+            a un formato que el modelo puede usar directamente.
+          </p>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr>
+                <th>monto</th>
+                <th>clase</th>
+                <th>ubicacion_Canadá</th>
+                <th>ubicacion_China</th>
+                <th>ubicacion_EEUU</th>
+                <th>horario_día</th>
+                <th>tipo_compra</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>34.175720</td><td>0.0</td><td>False</td><td>False</td><td>False</td><td>True</td><td>False</td></tr>
+              <tr><td>51.767621</td><td>0.0</td><td>False</td><td>False</td><td>False</td><td>False</td><td>True</td></tr>
+              <tr><td>52.317309</td><td>0.0</td><td>False</td><td>False</td><td>False</td><td>False</td><td>False</td></tr>
+              <tr><td>69.669170</td><td>0.0</td><td>False</td><td>False</td><td>False</td><td>False</td><td>False</td></tr>
+              <tr><td>42.681427</td><td>0.0</td><td>False</td><td>False</td><td>True</td><td>False</td><td>True</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 3</span>
+          <div class="step-title">Entrenar un modelo base: regresión logística</div>
+        </div>
+        <p>
+          Aquí aparece el flujo clásico de aprendizaje supervisado: separar datos, entrenar un modelo y obtener
+          predicciones sobre el conjunto de prueba.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step3-python">Python</button>
+                <button class="code-tab" type="button" data-target="step3-r">R</button>
+              </div>
+              <span>Aprendizaje supervisado</span>
+            </div>
+            <span>Modelo base</span>
+          </div>
+          <div class="code-pane active" id="step3-python">
+          <pre><code>from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, classification_report
+
+X = datos_codificados.drop('clase', axis=1)
+y = datos_codificados['clase']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+lr_model = LogisticRegression(random_state=42, max_iter=1000)
+lr_model.fit(X_train, y_train)
+
+y_pred = lr_model.predict(X_test)</code></pre>
+          </div>
+          <div class="code-pane" id="step3-r">
+          <pre><code>modelo_logit &lt;- logistic_reg() |&gt;
+  set_engine("glm")
+
+flujo_logit &lt;- workflow() |&gt;
+  add_recipe(fraude_receta) |&gt;
+  add_model(modelo_logit)
+
+ajuste_logit &lt;- fit(flujo_logit, data = datos_entrenamiento)
+
+predicciones_clase &lt;- predict(ajuste_logit, datos_prueba, type = "class")
+predicciones_prob &lt;- predict(ajuste_logit, datos_prueba, type = "prob")</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="note">
+          Aquí el foco está en hacer visible el flujo completo: preparar datos, entrenar un modelo
+          y leer su salida antes de pasar a decisiones más finas como umbrales o cambios en precisión y recall.
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 4</span>
+          <div class="step-title">Evaluar el resultado</div>
+        </div>
+        <p>
+          Las salidas concretas permiten mostrar que esta herramienta no enseña
+          solo sintaxis, sino también interpretación.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step4-python">Python</button>
+                <button class="code-tab" type="button" data-target="step4-r">R</button>
+              </div>
+              <span>Evaluación</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step4-python">
+          <pre><code>print("Matriz de confusión:\n", confusion_matrix(y_test, y_pred))
+print("Reporte de clasificación\n:", classification_report(y_test, y_pred))</code></pre>
+          </div>
+          <div class="code-pane" id="step4-r">
+          <pre><code>resultados_logit &lt;- bind_cols(
+  datos_prueba,
+  predicciones_clase,
+  predicciones_prob
+)
+
+conf_mat(resultados_logit, truth = clase, estimate = .pred_class)
+
+metric_set(accuracy, sens, spec, precision, recall, f_meas)(
+  resultados_logit,
+  truth = clase,
+  estimate = .pred_class
+)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <h4>Resultado guardado en el notebook</h4>
+          <div class="result-grid">
+            <div class="metric">
+              <div class="confusion-matrix" aria-label="Matriz de confusión">
+                <div class="matrix-axis-corner"></div>
+                <div class="matrix-axis-top">Pred. no fraude</div>
+                <div class="matrix-axis-top">Pred. fraude</div>
+                <div class="matrix-axis-side">Real no fraude</div>
+                <div class="matrix-cell">2007</div>
+                <div class="matrix-cell">0</div>
+                <div class="matrix-axis-side">Real fraude</div>
+                <div class="matrix-cell">3</div>
+                <div class="matrix-cell">90</div>
+              </div>
+              Matriz de confusión observada.
+            </div>
+            <div class="metric">
+              <strong>1.00</strong>
+              Precisión para la clase normal.
+            </div>
+            <div class="metric">
+              <strong>0.97</strong>
+              Recall para la clase fraude.
+            </div>
+            <div class="metric">
+              <strong>1.00</strong>
+              Accuracy total reportada.
+            </div>
+          </div>
+          <p class="footer-note">
+            El ejemplo es pedagógico y con datos simulados, por lo que el desempeño es mejor de lo que suele verse en casos reales.
+          </p>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 5</span>
+          <div class="step-title">Usar el modelo en casos nuevos</div>
+        </div>
+        <p>
+          Después del entrenamiento, se crean observaciones nuevas y se muestra cómo el modelo puede emitir
+          una clasificación para casos que no estaban etiquetados previamente.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step5-python">Python</button>
+                <button class="code-tab" type="button" data-target="step5-r">R</button>
+              </div>
+              <span>Nuevos casos</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step5-python">
+          <pre><code>nuevos_datos = pd.DataFrame({
+    'monto': [80, 30, 120, 60, 60, 100],
+    'ubicacion': ['EEUU', 'Canadá', 'Rusia', 'México', 'China', 'Nigeria'],
+    'horario': ['día', 'noche', 'noche', 'día', 'noche', 'noche'],
+    'tipo': ['compra', 'retiro', 'compra', 'retiro', 'retiro', 'retiro']
+})
+
+nuevos_datos_procesados = pd.get_dummies(nuevos_datos, columns=['ubicacion', 'horario', 'tipo'])
+predicciones = lr_model.predict(nuevos_datos_procesados)
+print("Predicciones:", predicciones)</code></pre>
+          </div>
+          <div class="code-pane" id="step5-r">
+          <pre><code>nuevos_datos &lt;- tibble(
+  monto = c(80, 30, 120, 60, 60, 100),
+  ubicacion = c("EEUU", "Canadá", "Rusia", "México", "China", "Nigeria"),
+  horario = c("día", "noche", "noche", "día", "noche", "noche"),
+  tipo = c("compra", "retiro", "compra", "retiro", "retiro", "retiro")
+)
+
+bind_cols(
+  nuevos_datos,
+  predict(ajuste_logit, nuevos_datos, type = "class"),
+  predict(ajuste_logit, nuevos_datos, type = "prob")
+)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <h4>Salida observada</h4>
+          <p><code>Predicciones: [0. 0. 1. 0. 1. 1.]</code></p>
+          <p>
+            Eso significa que, en este ejemplo, las transacciones 3, 5 y 6 serían clasificadas como fraudulentas.
+          </p>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr>
+                <th>monto</th>
+                <th>ubicacion</th>
+                <th>horario</th>
+                <th>tipo</th>
+                <th>predicción</th>
+                <th>etiqueta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>80</td><td>EEUU</td><td>día</td><td>compra</td><td>0</td><td><span class="status-pill safe">No fraudulenta</span></td></tr>
+              <tr><td>30</td><td>Canadá</td><td>noche</td><td>retiro</td><td>0</td><td><span class="status-pill safe">No fraudulenta</span></td></tr>
+              <tr><td>120</td><td>Rusia</td><td>noche</td><td>compra</td><td>1</td><td><span class="status-pill risk">Fraudulenta</span></td></tr>
+              <tr><td>60</td><td>México</td><td>día</td><td>retiro</td><td>0</td><td><span class="status-pill safe">No fraudulenta</span></td></tr>
+              <tr><td>60</td><td>China</td><td>noche</td><td>retiro</td><td>1</td><td><span class="status-pill risk">Fraudulenta</span></td></tr>
+              <tr><td>100</td><td>Nigeria</td><td>noche</td><td>retiro</td><td>1</td><td><span class="status-pill risk">Fraudulenta</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 6</span>
+          <div class="step-title">Comparar enfoques</div>
+        </div>
+        <p>
+          El mismo flujo también prueba un <code>árbol de decisión</code> y una salida con <code>K-Means</code>.
+          Eso es valioso porque deja ver que una misma base puede servir para mostrar familias de modelos distintas.
+        </p>
+        <div class="grid-two">
+          <div class="result-box">
+            <h4>Árbol de decisión</h4>
+            <p>En este caso simulado, el árbol reporta una matriz perfecta:</p>
+            <div class="confusion-matrix" aria-label="Matriz de confusión del árbol">
+              <div class="matrix-axis-corner"></div>
+              <div class="matrix-axis-top">Pred. no fraude</div>
+              <div class="matrix-axis-top">Pred. fraude</div>
+              <div class="matrix-axis-side">Real no fraude</div>
+              <div class="matrix-cell">3015</div>
+              <div class="matrix-cell">0</div>
+              <div class="matrix-axis-side">Real fraude</div>
+              <div class="matrix-cell">0</div>
+              <div class="matrix-cell">135</div>
+            </div>
+          </div>
+          <div class="result-box">
+            <h4>Clustering</h4>
+            <p>Cuando se fuerza una solución no supervisada, la precisión reportada cae a:</p>
+            <p><strong><code>Precisión del modelo K-Means: 0.57</code></strong></p>
+          </div>
+        </div>
+        <div class="note">
+          Esta comparación es muy útil para el curso: permite mostrar que no todos los métodos responden igual
+          a la misma pregunta y que cambiar de familia metodológica cambia también la lectura del fenómeno.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Replicarlo con IA</h2>
+      <p>
+        Hoy una IA puede ayudarte a escribir o adaptar gran parte del código, pero sigue siendo importante que tú
+        definas el problema, sepas qué variable quieres predecir y entiendas cómo vas a evaluar el resultado.
+      </p>
+      <div class="prompt-box">
+        <div class="prompt-header">
+          <h3>Prompt sugerido</h3>
+          <button class="copy-btn" type="button" data-copy-target="prompt-ia-u4">Copiar prompt</button>
+        </div>
+        <pre><code id="prompt-ia-u4">Quiero construir un ejemplo pedagógico de clasificación de fraude en Python con scikit-learn y replicar resultados comparables a los de esta herramienta.
+
+Parte de los mismos supuestos:
+- datos simulados, no reales;
+- 10000 transacciones normales;
+- 5% de transacciones fraudulentas;
+- variables: monto, ubicacion, horario y tipo;
+- clase objetivo binaria: fraude / no fraude;
+- transacciones normales concentradas en EEUU, México y Canadá;
+- transacciones fraudulentas concentradas en Nigeria, Rusia y China;
+- usar one-hot encoding para variables categóricas;
+- entrenar primero una regresión logística;
+- evaluar con matriz de confusión y classification report;
+- predecir nuevos casos;
+- y comparar brevemente con un árbol de decisión y con K-Means.
+
+Ayúdame a crear un notebook que:
+1. simule un conjunto de transacciones normales y fraudulentas;
+2. prepare variables categóricas con one-hot encoding;
+3. entrene una regresión logística;
+4. muestre matriz de confusión y classification report;
+5. clasifique algunos casos nuevos;
+6. compare brevemente el resultado con un árbol de decisión y con K-Means.
+
+Explícame cada paso en lenguaje claro, como si fuera una herramienta práctica para estudiantes que están aprendiendo machine learning aplicado a negocios.</code></pre>
+      </div>
+      <p class="footer-note">
+        Una IA puede ayudarte a escribir gran parte del código, pero sigue siendo importante que tú
+        <strong>definas el problema</strong>, <strong>entiendas qué variable quieres predecir</strong>
+        y <strong>sepas cómo evaluar si el resultado realmente sirve</strong>.
+      </p>
+    </section>
+  </main>
+  <script>
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function highlightCode(rawText) {
+      return rawText
+        .split('\n')
+        .map((line) => {
+          if (/^\s*#/.test(line)) {
+            return `<span class="code-comment">${escapeHtml(line)}</span>`;
+          }
+
+          let escaped = escapeHtml(line);
+          escaped = escaped.replace(/('[^'\n]*'|"[^"\n]*")/g, '<span class="code-string">$1</span>');
+          escaped = escaped.replace(/\b(import|from|as|library|print)\b/g, '<span class="code-keyword">$1</span>');
+          escaped = escaped.replace(/\b([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)\s*(?=\()/g, '<span class="code-fn">$1</span>');
+          return escaped;
+        })
+        .join('\n');
+    }
+
+    document.querySelectorAll('.code-pane code').forEach((code) => {
+      const rawText = code.textContent;
+      code.innerHTML = highlightCode(rawText);
+    });
+
+    const routeTitle = document.getElementById('route-title');
+    const routeBody = document.getElementById('route-body');
+    document.querySelectorAll('.route-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.route-btn').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        routeTitle.innerHTML = button.dataset.routeTitle;
+        routeBody.innerHTML = button.dataset.routeBody;
+      });
+    });
+
+    document.querySelectorAll('.code-block').forEach((block) => {
+      const tabs = Array.from(block.querySelectorAll('.code-tab'));
+      const panes = Array.from(block.querySelectorAll('.code-pane'));
+      const copyBtn = block.querySelector('.code-copy-btn');
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          tabs.forEach((item) => item.classList.remove('active'));
+          panes.forEach((pane) => pane.classList.remove('active'));
+          tab.classList.add('active');
+          const pane = block.querySelector(`#${tab.dataset.target}`);
+          if (pane) pane.classList.add('active');
+        });
+      });
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          const activePane = block.querySelector('.code-pane.active code');
+          if (!activePane) return;
+          const text = activePane.textContent;
+          try {
+            await navigator.clipboard.writeText(text);
+            copyBtn.textContent = 'Copiado';
+            copyBtn.classList.add('active-state');
+            setTimeout(() => {
+              copyBtn.textContent = 'Copiar';
+              copyBtn.classList.remove('active-state');
+            }, 1400);
+          } catch (error) {
+            const range = document.createRange();
+            range.selectNodeContents(activePane);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        });
+      }
+    });
+
+    document.querySelectorAll('.copy-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const targetId = button.getAttribute('data-copy-target');
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        const text = target.textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = button.textContent;
+          button.textContent = 'Copiado';
+          setTimeout(() => {
+            button.textContent = original;
+          }, 1400);
+        } catch (error) {
+          const range = document.createRange();
+          range.selectNodeContents(target);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

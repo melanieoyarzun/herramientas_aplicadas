@@ -1,0 +1,219 @@
+---
+title: "Herramienta práctica U4: clasificación de fraude en R"
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    toc: true
+execute:
+  warning: false
+  message: false
+---
+
+# Clasificación de fraude en R
+
+En esta herramienta práctica revisamos el mismo tipo de problema que en la versión en `Python`: detectar transacciones potencialmente fraudulentas a partir de variables observadas.
+
+La idea no es agotar la complejidad del problema, sino mostrar un flujo mínimo y reproducible:
+
+- construir un conjunto de datos de ejemplo;
+- preparar variables;
+- entrenar un modelo de clasificación;
+- evaluar el resultado;
+- y comparar brevemente con otros enfoques.
+
+## Paquetes
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(rpart)
+
+set.seed(42)
+```
+
+## 1. Generar datos simulados
+
+```{r}
+n_transacciones <- 10000
+
+datos_normales <- tibble(
+  monto = rnorm(n_transacciones, mean = 50, sd = 10),
+  ubicacion = sample(c("EEUU", "México", "Canadá"), n_transacciones, replace = TRUE),
+  horario = sample(c("día", "noche"), n_transacciones, replace = TRUE),
+  tipo = sample(c("compra", "retiro"), n_transacciones, replace = TRUE),
+  clase = 0
+)
+
+datos_fraudulentos <- tibble(
+  monto = rnorm(n_transacciones * 0.05, mean = 100, sd = 20),
+  ubicacion = sample(c("Nigeria", "Rusia", "China"), n_transacciones * 0.05, replace = TRUE),
+  horario = sample(c("día", "noche"), n_transacciones * 0.05, replace = TRUE),
+  tipo = sample(c("compra", "retiro"), n_transacciones * 0.05, replace = TRUE),
+  clase = 1
+)
+
+datos <- bind_rows(datos_normales, datos_fraudulentos) |>
+  slice_sample(prop = 1) |>
+  mutate(
+    clase = factor(if_else(clase == 1, "fraude", "normal"))
+  )
+
+glimpse(datos)
+```
+
+## 2. Separar entrenamiento y prueba
+
+```{r}
+set.seed(42)
+particion <- initial_split(datos, prop = 0.8, strata = clase)
+datos_entrenamiento <- training(particion)
+datos_prueba <- testing(particion)
+```
+
+## 3. Preparar variables
+
+Como el modelo necesita trabajar con variables numéricas, transformamos las categóricas usando `dummies`.
+
+```{r}
+fraude_receta <- recipe(clase ~ ., data = datos_entrenamiento) |>
+  step_dummy(all_nominal_predictors())
+
+fraude_receta
+```
+
+## 4. Entrenar una regresión logística
+
+```{r}
+modelo_logit <- logistic_reg() |>
+  set_engine("glm")
+
+flujo_logit <- workflow() |>
+  add_recipe(fraude_receta) |>
+  add_model(modelo_logit)
+
+ajuste_logit <- fit(flujo_logit, data = datos_entrenamiento)
+
+ajuste_logit
+```
+
+## 5. Evaluar el modelo
+
+```{r}
+predicciones_clase <- predict(ajuste_logit, datos_prueba, type = "class")
+predicciones_prob <- predict(ajuste_logit, datos_prueba, type = "prob")
+
+resultados_logit <- bind_cols(
+  datos_prueba,
+  predicciones_clase,
+  predicciones_prob
+)
+
+conf_mat(resultados_logit, truth = clase, estimate = .pred_class)
+```
+
+```{r}
+metric_set(accuracy, sens, spec, precision, recall, f_meas)(
+  resultados_logit,
+  truth = clase,
+  estimate = .pred_class
+)
+```
+
+## 6. Predecir nuevos casos
+
+```{r}
+nuevos_datos <- tibble(
+  monto = c(80, 30, 120, 60, 60, 100),
+  ubicacion = c("EEUU", "Canadá", "Rusia", "México", "China", "Nigeria"),
+  horario = c("día", "noche", "noche", "día", "noche", "noche"),
+  tipo = c("compra", "retiro", "compra", "retiro", "retiro", "retiro")
+)
+
+bind_cols(
+  nuevos_datos,
+  predict(ajuste_logit, nuevos_datos, type = "class"),
+  predict(ajuste_logit, nuevos_datos, type = "prob")
+)
+```
+
+## 7. Comparar con un árbol de decisión
+
+```{r}
+modelo_arbol <- decision_tree(mode = "classification") |>
+  set_engine("rpart")
+
+flujo_arbol <- workflow() |>
+  add_recipe(fraude_receta) |>
+  add_model(modelo_arbol)
+
+ajuste_arbol <- fit(flujo_arbol, data = datos_entrenamiento)
+
+pred_arbol <- bind_cols(
+  datos_prueba,
+  predict(ajuste_arbol, datos_prueba, type = "class")
+)
+
+conf_mat(pred_arbol, truth = clase, estimate = .pred_class)
+```
+
+## 8. Mirar qué pasa con clustering
+
+Aquí no intentamos “predecir fraude” directamente. Agrupamos transacciones según sus características y observamos qué tan alineados quedan esos grupos con la clase real.
+
+```{r}
+matriz_cluster <- fraude_receta |>
+  prep() |>
+  bake(new_data = datos) |>
+  select(-clase)
+
+matriz_cluster_escalada <- scale(matriz_cluster)
+
+set.seed(42)
+modelo_kmeans <- kmeans(matriz_cluster_escalada, centers = 2, nstart = 10)
+
+datos_cluster <- datos |>
+  mutate(cluster = factor(modelo_kmeans$cluster))
+
+count(datos_cluster, cluster, clase)
+```
+
+```{r}
+ggplot(datos_cluster, aes(x = monto, y = cluster, color = clase)) +
+  geom_jitter(height = 0.12, alpha = 0.5) +
+  labs(
+    title = "Clusters obtenidos con K-Means",
+    x = "Monto de la transacción",
+    y = "Cluster"
+  ) +
+  theme_minimal()
+```
+
+## Cierre
+
+Este ejemplo permite mostrar una idea importante de la unidad: distintos modelos responden preguntas distintas, y no basta con “ejecutar código”.
+
+En un flujo real también importan:
+
+- la definición del problema;
+- la representación de los datos;
+- la métrica que se usa para evaluar;
+- y el contexto organizacional en el que se interpretará el resultado.
+
+## Replicarlo con IA
+
+Si quieres intentar reproducir este flujo con ayuda de una IA, puedes probar con un prompt como este:
+
+```text
+Quiero construir en R una herramienta práctica de clasificación de fraude usando tidymodels.
+
+Ayúdame a crear un ejemplo reproducible que:
+1. simule transacciones normales y fraudulentas;
+2. prepare variables categóricas con dummies;
+3. entrene una regresión logística;
+4. muestre matriz de confusión y métricas básicas;
+5. haga predicciones sobre nuevos casos;
+6. compare brevemente con un árbol de decisión y con K-Means.
+
+Explícame cada paso en lenguaje claro y pedagógico.
+```

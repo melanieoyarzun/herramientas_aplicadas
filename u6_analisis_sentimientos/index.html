@@ -1,0 +1,1050 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Herramienta práctica U6 · Análisis de sentimientos</title>
+  <style>
+    :root {
+      --bg: #eef3f7;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --muted: #60758d;
+      --line: #ced9e5;
+      --accent: #1e6de0;
+      --accent-soft: #dfeafe;
+      --accent-2: #0f8a6c;
+      --code-bg: #edf1f5;
+      --code-ink: #203247;
+      --warm: #f4efe4;
+      --shadow: 0 16px 50px rgba(23, 50, 77, 0.10);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(30,109,224,0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(15,138,108,0.12), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(206, 217, 229, 0.95);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px 30px 34px;
+      margin-bottom: 24px;
+    }
+
+    .hero-copy { max-width: 100%; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.08;
+      color: var(--ink);
+    }
+
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(2.4rem, 4.2vw, 3.8rem);
+      max-width: 100%;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .lead {
+      margin: 18px 0 0;
+      max-width: 78ch;
+      font-size: 1.2rem;
+      color: var(--muted);
+    }
+
+    .byline {
+      margin: 12px 0 0;
+      font-size: 0.98rem;
+      color: var(--muted);
+    }
+
+    .byline a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .byline a:hover {
+      text-decoration: underline;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .cta.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .panel {
+      padding: 26px;
+      margin-bottom: 22px;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fdfefe, #f5f8fb);
+    }
+
+    .mini-card h3,
+    .mini-card h2 {
+      font-size: 1.08rem;
+      margin-bottom: 10px;
+    }
+
+    .route-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .route-btn {
+      display: inline-flex;
+      cursor: pointer;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .route-btn.active {
+      background: var(--accent-soft);
+      border-color: rgba(30, 109, 224, 0.28);
+      color: var(--accent);
+    }
+
+    .route-label { font-size: 0.96rem; }
+
+    .route-panel {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fdfefe, #f5f8fb);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    ul {
+      margin: 12px 0 0 1.2rem;
+      padding: 0;
+    }
+
+    .step-section { padding-top: 10px; }
+    .step-section + .step-section {
+      margin-top: 18px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .step-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--warm);
+      color: #6a5220;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .code-block {
+      margin-top: 14px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border: 1px solid rgba(23, 50, 77, 0.12);
+    }
+
+    .code-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(23, 50, 77, 0.05);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #48627e;
+    }
+
+    .code-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .code-tabs {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .code-tab {
+      border: 1px solid rgba(207, 225, 255, 0.24);
+      background: #fff;
+      color: #48627e;
+      border-radius: 999px;
+      min-height: 32px;
+      padding: 0 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .code-tab.active {
+      background: rgba(255,255,255,0.12);
+      color: var(--accent);
+      border-color: rgba(30, 109, 224, 0.28);
+    }
+
+    .code-copy-btn,
+    .copy-btn {
+      border: 1px solid rgba(23, 50, 77, 0.14);
+      background: #fff;
+      color: #48627e;
+      border-radius: 999px;
+      min-height: 32px;
+      padding: 0 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .code-copy-btn.active-state,
+    .copy-btn.active-state {
+      background: rgba(255,255,255,0.12);
+      color: var(--accent);
+      border-color: rgba(30, 109, 224, 0.28);
+    }
+
+    .code-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 16px 16px;
+    }
+
+    .code-pane { display: none; }
+    .code-pane.active { display: block; }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      font-size: 0.94rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    code {
+      font-family: "SFMono-Regular", "Consolas", "Menlo", monospace;
+    }
+
+    .code-comment {
+      color: #95a5b5;
+      font-style: italic;
+    }
+
+    .code-string { color: #0f8a6c; }
+    .code-keyword { color: #8d46d8; font-weight: 700; }
+    .code-fn { color: #1e6de0; font-weight: 700; }
+
+    .result-box {
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #f5fbf9, #ecf8f3);
+      border: 1px solid rgba(15, 138, 108, 0.18);
+    }
+
+    .result-box h4 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--accent-2);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(15, 138, 108, 0.16);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.35rem;
+      color: var(--ink);
+    }
+
+    .table-preview {
+      margin-top: 14px;
+      overflow-x: auto;
+      border: 1px solid rgba(23, 50, 77, 0.08);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .table-preview table {
+      width: 100%;
+      min-width: 620px;
+      border-collapse: collapse;
+      font-size: 0.96rem;
+    }
+
+    .table-preview th,
+    .table-preview td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(23, 50, 77, 0.08);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table-preview th {
+      background: #f5f8fc;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .status-pill.safe {
+      background: #edf7f3;
+      color: #0f8a6c;
+      border: 1px solid rgba(15, 138, 108, 0.18);
+    }
+
+    .status-pill.risk {
+      background: #fff0ef;
+      color: #bf3a2b;
+      border: 1px solid rgba(191, 58, 43, 0.18);
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: #f7faff;
+      border-radius: 0 16px 16px 0;
+      color: var(--muted);
+    }
+
+    .prompt-box {
+      margin-top: 16px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fff8f1, #fff0df);
+      border: 1px solid rgba(210, 137, 34, 0.18);
+      padding: 18px;
+    }
+
+    .prompt-box h3 {
+      font-size: 1.18rem;
+      margin-bottom: 8px;
+      color: #7a4b00;
+    }
+
+    .prompt-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    @media (max-width: 860px) {
+      .grid-two { grid-template-columns: 1fr; }
+      h1 { white-space: normal; }
+      .route-buttons { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Herramienta práctica · U6</span>
+        <h1>Análisis de sentimientos con texto</h1>
+        <p class="lead">
+          Aquí puedes recorrer paso a paso un ejemplo de análisis de sentimientos:
+          definir reseñas, tokenizar texto, puntuar sentimiento, corregir negaciones
+          y pasar desde un caso pequeño a un conjunto más real.
+        </p>
+        <p class="byline">
+          <strong>Preparado por Melanie Oyarzun</strong><br>
+          <a href="https://moyarzun.netlify.app" target="_blank" rel="noreferrer">moyarzun.netlify.app</a>
+        </p>
+        <div class="cta-row">
+          <a class="cta primary" href="https://github.com/melanieoyarzun/herramientas_aplicadas/blob/main/ejemplo_unidad6_sentimientos.ipynb" target="_blank" rel="noreferrer">Ver en GitHub</a>
+          <a class="cta" href="https://colab.research.google.com/github/melanieoyarzun/herramientas_aplicadas/blob/main/ejemplo_unidad6_sentimientos.ipynb" target="_blank" rel="noreferrer">Abrir en Colab</a>
+          <a class="cta" href="./ejemplo_unidad6_sentimientos_python.ipynb" download>Descargar Python Notebook</a>
+          <a class="cta" href="./ejemplo_unidad6_sentimientos.ipynb" download>Descargar R Notebook</a>
+          <a class="cta" href="./data_bose.csv" download>Descargar dataset</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel grid-two">
+      <article class="mini-card">
+        <h2>Qué aprenderás aquí</h2>
+        <ul>
+          <li>Cómo pasar de reseñas escritas a una representación que una máquina pueda procesar.</li>
+          <li>Qué hace un enfoque léxico de sentimiento y dónde suele fallar.</li>
+          <li>Por qué las negaciones cambian la lectura y cómo se puede corregir parte del problema.</li>
+        </ul>
+      </article>
+      <article class="mini-card">
+        <h2>Qué encontrarás aquí</h2>
+        <ul>
+          <li><code>Caso</code> pequeño y controlado antes de saltar a datos reales.</li>
+          <li><code>Código</code> en <code>R</code> y una versión equivalente en <code>Python</code>.</li>
+          <li><code>Resultados</code> visibles para tokenización, puntajes y frecuencias.</li>
+          <li><code>Descargas</code> y una sección final para <code>replicarlo con IA</code>.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Ruta de trabajo</h2>
+      <div class="route-buttons">
+        <button class="route-btn active" type="button" data-route-title="Paso 1. Reseñas" data-route-body="Primero se construye un conjunto pequeño de reseñas para ver el problema con control total sobre el texto."><span class="route-label">1. Reseñas</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 2. Tokenización" data-route-body="El texto se separa en unidades más simples para poder cruzarlo después con diccionarios o reglas."><span class="route-label">2. Tokenización</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 3. Sentimiento base" data-route-body="Aquí aparece la lectura más simple: cada palabra suma o resta puntaje según un diccionario léxico."><span class="route-label">3. Sentimiento base</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 4. Negaciones" data-route-body="Una parte importante del trabajo consiste en corregir expresiones como not satisfied o not recommend, que un enfoque ingenuo suele leer mal."><span class="route-label">4. Negaciones</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 5. Frecuencias" data-route-body="Además del puntaje, conviene mirar palabras y expresiones frecuentes para abrir una lectura más descriptiva del corpus."><span class="route-label">5. Frecuencias</span></button>
+        <button class="route-btn" type="button" data-route-title="Paso 6. Caso real" data-route-body="Por último, el ejemplo se extiende a un conjunto más grande de reseñas reales para mostrar cómo escala el flujo."><span class="route-label">6. Caso real</span></button>
+      </div>
+      <div class="route-panel">
+        <strong id="route-title">Paso 1. Reseñas</strong>
+        <p id="route-body" style="margin:8px 0 0;">Primero se construye un conjunto pequeño de reseñas para ver el problema con control total sobre el texto.</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 1</span>
+          <div class="step-title">Crear un conjunto pequeño de reseñas</div>
+        </div>
+        <p>
+          El ejemplo parte con cinco reseñas ficticias en inglés. Eso permite ver el flujo
+          con claridad antes de pasar a un corpus más grande.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step1-r">R</button>
+                <button class="code-tab" type="button" data-target="step1-python">Python</button>
+              </div>
+              <span>Generación de reseñas</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step1-r">
+<pre><code># Creamos un conjunto de datos ficticio de reseñas de clientes.
+reviews <- data.frame(
+  customer = c("Customer 1", "Customer 2", "Customer 3", "Customer 4", "Customer 5"),
+  review = c(
+    "Excellent product, I highly recommend it!",
+    "The product was good but the delivery was slow",
+    "I am not satisfied with the product, I expected better quality",
+    "The product arrived in perfect condition and in record time",
+    "I would not recommend this product to others, it did not meet my expectations"
+  )
+)</code></pre>
+          </div>
+          <div class="code-pane" id="step1-python">
+<pre><code># Create a small review dataset with the same five examples
+import pandas as pd
+
+reviews = pd.DataFrame({
+    "customer": ["Customer 1", "Customer 2", "Customer 3", "Customer 4", "Customer 5"],
+    "review": [
+        "Excellent product, I highly recommend it!",
+        "The product was good but the delivery was slow",
+        "I am not satisfied with the product, I expected better quality",
+        "The product arrived in perfect condition and in record time",
+        "I would not recommend this product to others, it did not meet my expectations"
+    ]
+})</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr><th>customer</th><th>review</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Customer 1</td><td>Excellent product, I highly recommend it!</td></tr>
+              <tr><td>Customer 2</td><td>The product was good but the delivery was slow</td></tr>
+              <tr><td>Customer 3</td><td>I am not satisfied with the product, I expected better quality</td></tr>
+              <tr><td>Customer 4</td><td>The product arrived in perfect condition and in record time</td></tr>
+              <tr><td>Customer 5</td><td>I would not recommend this product to others, it did not meet my expectations</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 2</span>
+          <div class="step-title">Tokenizar el texto</div>
+        </div>
+        <p>
+          Tokenizar significa separar el texto en unidades más pequeñas, como palabras.
+          Esa operación es una base importante del procesamiento de lenguaje.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step2-r">R</button>
+                <button class="code-tab" type="button" data-target="step2-python">Python</button>
+              </div>
+              <span>Tokenización</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step2-r">
+<pre><code># Tokenizamos las palabras en cada reseña
+reviews_tokens &lt;- reviews %&gt;%
+  unnest_tokens(word, review)
+
+head(reviews_tokens, 10)</code></pre>
+          </div>
+          <div class="code-pane" id="step2-python">
+<pre><code># Tokenize the reviews into lowercase words
+import re
+
+tokens = (
+    reviews.assign(word=reviews["review"].str.lower().str.findall(r"[a-z']+"))
+    .explode("word")
+    [["customer", "word"]]
+)
+
+tokens.head(10)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr><th>customer</th><th>word</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Customer 1</td><td>excellent</td></tr>
+              <tr><td>Customer 1</td><td>product</td></tr>
+              <tr><td>Customer 1</td><td>i</td></tr>
+              <tr><td>Customer 1</td><td>highly</td></tr>
+              <tr><td>Customer 1</td><td>recommend</td></tr>
+              <tr><td>Customer 1</td><td>it</td></tr>
+              <tr><td>Customer 2</td><td>the</td></tr>
+              <tr><td>Customer 2</td><td>product</td></tr>
+              <tr><td>Customer 2</td><td>was</td></tr>
+              <tr><td>Customer 2</td><td>good</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 3</span>
+          <div class="step-title">Asignar un puntaje de sentimiento base</div>
+        </div>
+        <p>
+          En este punto aparece una lógica clásica: cruzar palabras con un diccionario
+          que clasifica términos como positivos o negativos.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step3-r">R</button>
+                <button class="code-tab" type="button" data-target="step3-python">Python</button>
+              </div>
+              <span>Sentimiento léxico</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step3-r">
+<pre><code># Unimos palabras con el diccionario de sentimientos
+reviews_sentiment_bing &lt;- reviews_tokens %&gt;%
+  inner_join(sentiments, by = "word")
+
+# Sumamos puntajes por reseña
+reviews_scored &lt;- reviews_sentiment_bing %&gt;%
+  mutate(value = ifelse(sentiment == "positive", 1, -1)) %&gt;%
+  group_by(customer) %&gt;%
+  summarize(sentiment_score = sum(value))
+
+head(reviews_scored)</code></pre>
+          </div>
+          <div class="code-pane" id="step3-python">
+<pre><code># Score the reviews with a small positive/negative lexicon
+lexicon = {
+    "excellent": 1, "recommend": 1, "good": 1, "better": 1,
+    "perfect": 1, "slow": -1
+}
+
+scores = (
+    tokens.assign(value=tokens["word"].map(lexicon).fillna(0))
+    .groupby("customer", as_index=False)["value"]
+    .sum()
+    .rename(columns={"value": "sentiment_score"})
+)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <h4>Resultado guardado en el notebook</h4>
+          <div class="result-grid">
+            <div class="metric"><strong>2</strong>Customer 1</div>
+            <div class="metric"><strong>0</strong>Customer 2</div>
+            <div class="metric"><strong>2</strong>Customer 3</div>
+            <div class="metric"><strong>1</strong>Customer 4</div>
+            <div class="metric"><strong>1</strong>Customer 5</div>
+          </div>
+          <p class="footer-note">
+            Aquí aparece una limitación importante: las reseñas 3 y 5 son leídas demasiado bien
+            porque el enfoque todavía no entiende expresiones como <code>not satisfied</code> o <code>not recommend</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 4</span>
+          <div class="step-title">Corregir negaciones y volver a puntuar</div>
+        </div>
+        <p>
+          Una forma simple de mejorar la lectura es detectar bigramas de negación
+          y reemplazarlos por expresiones más coherentes con el sentimiento real.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step4-r">R</button>
+                <button class="code-tab" type="button" data-target="step4-python">Python</button>
+              </div>
+              <span>Negaciones</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step4-r">
+<pre><code># Buscamos negaciones frecuentes
+negaciones &lt;- reviews %&gt;%
+  unnest_tokens(bigram, review, token = "ngrams", n = 2) %&gt;%
+  count(bigram, sort = TRUE) %&gt;%
+  separate(bigram, c("word1", "word2"), sep = " ") %&gt;%
+  filter(word1 %in% negation.words &amp; !word2 %in% stop_words$word) %&gt;%
+  inner_join(get_sentiments("bing"), by = c(word2 = "word"))
+
+# Reemplazamos y repetimos el scoring
+review_negations_fix_manual &lt;- mgsub(reviews$review, c("expected better quality", "did not meet my expectations", "not satisfied"), c("bad", "bad", "bad"))</code></pre>
+          </div>
+          <div class="code-pane" id="step4-python">
+<pre><code># Apply a small manual negation fix before rescoring
+replacements = {
+    "not satisfied": "bad",
+    "not recommend": "bad",
+    "did not meet my expectations": "bad",
+    "expected better quality": "bad"
+}
+
+reviews_fixed = reviews.copy()
+for old, new in replacements.items():
+    reviews_fixed["review"] = reviews_fixed["review"].str.replace(old, new, regex=False)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="result-box">
+          <h4>Puntaje después del ajuste</h4>
+          <div class="result-grid">
+            <div class="metric"><strong>2</strong>Customer 1</div>
+            <div class="metric"><strong>0</strong>Customer 2</div>
+            <div class="metric"><strong>0</strong>Customer 3</div>
+            <div class="metric"><strong>1</strong>Customer 4</div>
+            <div class="metric"><strong>-1</strong>Customer 5</div>
+          </div>
+          <p class="footer-note">
+            El ajuste sigue siendo imperfecto, pero ya corrige parte del error de lectura:
+            la reseña 5 pasa a negativa y la 3 deja de verse artificialmente positiva.
+          </p>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 5</span>
+          <div class="step-title">Mirar palabras frecuentes</div>
+        </div>
+        <p>
+          Además del puntaje, también sirve mirar qué palabras aparecen más veces
+          después de sacar stopwords y términos poco informativos.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step5-r">R</button>
+                <button class="code-tab" type="button" data-target="step5-python">Python</button>
+              </div>
+              <span>Frecuencias</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step5-r">
+<pre><code># Contamos palabras relevantes
+freq.table &lt;- reviews %&gt;%
+  unnest_tokens(word, review) %&gt;%
+  anti_join(stop_words) %&gt;%
+  anti_join(ignore.words) %&gt;%
+  count(word, sort = TRUE)
+
+head(freq.table)</code></pre>
+          </div>
+          <div class="code-pane" id="step5-python">
+<pre><code># Count frequent words after a simple stopword filter
+from collections import Counter
+
+stop_words = {"the", "i", "it", "to", "with", "am", "was", "but", "this"}
+freq = Counter(word for word in tokens["word"] if word not in stop_words and word != "product")
+freq.most_common(6)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr><th>word</th><th>n</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>recommend</td><td>2</td></tr>
+              <tr><td>arrived</td><td>1</td></tr>
+              <tr><td>condition</td><td>1</td></tr>
+              <tr><td>delivery</td><td>1</td></tr>
+              <tr><td>excellent</td><td>1</td></tr>
+              <tr><td>expectations</td><td>1</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-header">
+          <span class="tag">Paso 6</span>
+          <div class="step-title">Pasar a un conjunto más real</div>
+        </div>
+        <p>
+          El notebook también incluye un segundo ejemplo con reseñas de audífonos.
+          Ahí ya no trabajamos con cinco textos, sino con un corpus más grande y con limpieza real del lenguaje.
+        </p>
+        <div class="code-block">
+          <div class="code-label">
+            <div class="code-top">
+              <div class="code-tabs">
+                <button class="code-tab active" type="button" data-target="step6-r">R</button>
+                <button class="code-tab" type="button" data-target="step6-python">Python</button>
+              </div>
+              <span>Datos reales</span>
+            </div>
+          </div>
+          <div class="code-pane active" id="step6-r">
+<pre><code># Cargamos y limpiamos un conjunto más grande de reseñas
+bose.headphones.reviews &lt;- read.csv("https://raw.githubusercontent.com/melanieoyarzun/herramientas_aplicadas/refs/heads/main/data/data_bose.csv")
+
+bose.headphones.reviews &lt;- filter(bose.headphones.reviews, Verified_Purchase == TRUE)
+bose.headphones.reviews.text &lt;- bose.headphones.reviews %&gt;%
+  select(reviewText)
+
+head(bose.headphones.reviews, 3)</code></pre>
+          </div>
+          <div class="code-pane" id="step6-python">
+<pre><code># Load a larger review dataset and keep verified purchases
+import pandas as pd
+
+bose = pd.read_csv("data_bose.csv")
+bose = bose[bose["Verified_Purchase"] == True].copy()
+
+bose[["reviewRating", "reviewHeadline", "reviewFormat"]].head(3)</code></pre>
+          </div>
+          <div class="code-footer">
+            <button class="code-copy-btn" type="button">Copiar</button>
+          </div>
+        </div>
+        <div class="table-preview">
+          <table>
+            <thead>
+              <tr><th>reviewRating</th><th>reviewHeadline</th><th>reviewFormat</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>DO NOT BUY IF YOU INTEND TO TALK OUTSIDE</td><td>Color: White</td></tr>
+              <tr><td>1</td><td>Great Sound, Poor Quality, Poor Customer Service</td><td>Color: White</td></tr>
+              <tr><td>5</td><td>The BEST Headphones I Have Ever Used!!!</td><td>Color: Black</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">
+          Este paso deja clara una diferencia clave de la unidad: una cosa es mostrar la lógica con un ejemplo pequeño
+          y otra muy distinta es limpiar, normalizar y leer texto a escala.
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Replicarlo con IA</h2>
+      <p>
+        Una IA puede ayudarte a escribir gran parte del código, pero sigue siendo importante que tú
+        <strong>definas qué quieres medir</strong>, <strong>entiendas las limitaciones del método</strong>
+        y <strong>decidas cuándo una salida realmente sirve para interpretar texto</strong>.
+      </p>
+      <div class="prompt-box">
+        <div class="prompt-header">
+          <h3>Prompt sugerido</h3>
+          <button class="copy-btn" type="button" data-copy-target="prompt-ia-u6">Copiar prompt</button>
+        </div>
+<pre><code id="prompt-ia-u6">Quiero construir un ejemplo pedagógico de análisis de sentimientos sobre reseñas de clientes y replicar una herramienta paso a paso.
+
+Parte de los mismos supuestos:
+- empezar con un conjunto pequeño de cinco reseñas en inglés;
+- tokenizar el texto;
+- usar un enfoque léxico simple para asignar sentimiento;
+- mostrar dónde falla cuando hay negaciones;
+- corregir parcialmente expresiones como "not satisfied" o "not recommend";
+- volver a puntuar las reseñas después del ajuste;
+- mostrar una tabla de palabras más frecuentes;
+- y cerrar con un ejemplo más real usando un dataset de reseñas de producto.
+
+Ayúdame a crear un notebook en R o Python que:
+1. construya las reseñas de ejemplo;
+2. tokenice el texto;
+3. asigne un puntaje de sentimiento base;
+4. corrija negaciones de forma simple;
+5. muestre frecuencias de palabras;
+6. y luego extienda el flujo a un conjunto más grande de reseñas reales.
+
+Explícame cada paso en lenguaje claro, como si fuera una herramienta práctica para estudiantes que están aprendiendo NLP aplicado a negocios.</code></pre>
+      </div>
+    </section>
+  </main>
+  <script>
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function highlightCode(rawText) {
+      return rawText
+        .split('\n')
+        .map((line) => {
+          if (/^\s*#/.test(line)) {
+            return `<span class="code-comment">${escapeHtml(line)}</span>`;
+          }
+          let escaped = escapeHtml(line);
+          escaped = escaped.replace(/('[^'\n]*'|"[^"\n]*")/g, '<span class="code-string">$1</span>');
+          escaped = escaped.replace(/\b(import|from|as|library|print)\b/g, '<span class="code-keyword">$1</span>');
+          escaped = escaped.replace(/\b([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)\s*(?=\()/g, '<span class="code-fn">$1</span>');
+          return escaped;
+        })
+        .join('\n');
+    }
+
+    document.querySelectorAll('.code-pane code').forEach((code) => {
+      const rawText = code.textContent;
+      code.innerHTML = highlightCode(rawText);
+    });
+
+    const routeTitle = document.getElementById('route-title');
+    const routeBody = document.getElementById('route-body');
+    document.querySelectorAll('.route-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.route-btn').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        routeTitle.innerHTML = button.dataset.routeTitle;
+        routeBody.innerHTML = button.dataset.routeBody;
+      });
+    });
+
+    document.querySelectorAll('.code-block').forEach((block) => {
+      const tabs = Array.from(block.querySelectorAll('.code-tab'));
+      const panes = Array.from(block.querySelectorAll('.code-pane'));
+      const copyBtn = block.querySelector('.code-copy-btn');
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          tabs.forEach((item) => item.classList.remove('active'));
+          panes.forEach((pane) => pane.classList.remove('active'));
+          tab.classList.add('active');
+          const pane = block.querySelector(`#${tab.dataset.target}`);
+          if (pane) pane.classList.add('active');
+        });
+      });
+
+      if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+          const activePane = block.querySelector('.code-pane.active code');
+          if (!activePane) return;
+          const text = activePane.textContent;
+          try {
+            await navigator.clipboard.writeText(text);
+            copyBtn.textContent = 'Copiado';
+            copyBtn.classList.add('active-state');
+            setTimeout(() => {
+              copyBtn.textContent = 'Copiar';
+              copyBtn.classList.remove('active-state');
+            }, 1400);
+          } catch (error) {
+            const range = document.createRange();
+            range.selectNodeContents(activePane);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        });
+      }
+    });
+
+    document.querySelectorAll('.copy-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const targetId = button.getAttribute('data-copy-target');
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        const text = target.textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = button.textContent;
+          button.textContent = 'Copiado';
+          button.classList.add('active-state');
+          setTimeout(() => {
+            button.textContent = original;
+            button.classList.remove('active-state');
+          }, 1400);
+        } catch (error) {
+          const range = document.createRange();
+          range.selectNodeContents(target);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

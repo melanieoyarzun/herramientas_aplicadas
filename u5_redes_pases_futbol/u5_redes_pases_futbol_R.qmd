@@ -1,0 +1,323 @@
+---
+title: "Redes de pases en fútbol"
+subtitle: "Versión R"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    theme: cosmo
+    code-fold: false
+    code-tools: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Redes de pases en fútbol
+
+Este documento reproduce en R la misma lógica del notebook en Python: transformar una tabla de pases en una red, donde los jugadores son `nodos` y los pases completados son `enlaces`.
+
+La versión original del caso se apoya en el artículo de Dato-Futbol ["Redes de pases en el fútbol"](https://medium.com/datos-y-ciencia/redes-de-pases-en-el-f%C3%BAtbol-f014e6fd9f76) y en el repositorio [`Dato-Futbol/passing-networks`](https://github.com/Dato-Futbol/passing-networks). Aquí usamos una versión pedagógica y autocontenida para que el flujo sea fácil de ejecutar.
+
+## Qué vamos a hacer
+
+1. Cargar una tabla de pases simulados.
+2. Filtrar pases completados.
+3. Construir una `edge list`: quién le pasa a quién y cuántas veces.
+4. Construir una tabla de nodos: posición media y participación de cada jugador.
+5. Crear una matriz de adyacencia.
+6. Dibujar la red sobre una cancha.
+7. Interpretar qué jugadores y conexiones estructuran el juego.
+
+```{r}
+# Load the libraries used in this walkthrough.
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+library(knitr)
+```
+
+## 1. Cargar los pases
+
+Cada fila representa un pase observado durante un partido. Para simplificar, usamos un solo equipo y coordenadas en una cancha de `105 x 68` metros.
+
+En datos reales, esta tabla podría venir de una fuente de eventos como StatsBomb o de datos de tracking como Metrica Sports.
+
+```{r}
+# Load the demo pass event data.
+passes <- read_csv("pases_futbol_demo.csv", show_col_types = FALSE)
+
+passes |> 
+  head(8) |> 
+  kable()
+```
+
+## 2. Quedarnos con pases completados
+
+Para una red básica de pases suele interesar mirar los pases que efectivamente conectaron a dos jugadores. Los pases incompletos también pueden analizarse, pero responden otra pregunta: riesgo, error, presión o pérdida.
+
+```{r}
+# Keep completed passes for the network construction.
+completed <- passes |> 
+  filter(outcome == "Complete")
+
+summary_table <- tibble(
+  metric = c("total_passes", "completed_passes", "completion_rate"),
+  value = c(
+    nrow(passes),
+    nrow(completed),
+    round(nrow(completed) / nrow(passes), 3)
+  )
+)
+
+summary_table |> 
+  kable()
+```
+
+## 3. Construir la lista de aristas
+
+La `edge list` es una de las formas más simples de representar una red. En este caso, cada fila dice:
+
+- jugador de origen;
+- jugador receptor;
+- cantidad de pases entre ambos;
+- posición promedio desde donde sale y hacia donde llega esa conexión.
+
+```{r}
+# Build a directed weighted edge list.
+edges <- completed |> 
+  group_by(from_player, to_player) |> 
+  summarise(
+    pass_count = n(),
+    x_start = mean(x_start),
+    y_start = mean(y_start),
+    x_end = mean(x_end),
+    y_end = mean(y_end),
+    .groups = "drop"
+  ) |> 
+  arrange(desc(pass_count))
+
+edges |> 
+  head(10) |> 
+  kable()
+```
+
+## 4. Construir la tabla de nodos
+
+Los nodos son los jugadores. Para ubicarlos en la cancha, usamos una posición promedio combinando dónde iniciaron pases y dónde recibieron pases.
+
+El tamaño del nodo se relaciona con su participación: pases dados más pases recibidos.
+
+```{r}
+# Estimate player positions from pass origins and receptions.
+origins <- completed |> 
+  transmute(player = from_player, x = x_start, y = y_start)
+
+receptions <- completed |> 
+  transmute(player = to_player, x = x_end, y = y_end)
+
+node_positions <- bind_rows(origins, receptions) |> 
+  group_by(player) |> 
+  summarise(
+    x = mean(x),
+    y = mean(y),
+    .groups = "drop"
+  )
+
+out_stats <- completed |> 
+  count(player = from_player, name = "passes_given")
+
+in_stats <- completed |> 
+  count(player = to_player, name = "passes_received")
+
+nodes <- node_positions |> 
+  left_join(out_stats, by = "player") |> 
+  left_join(in_stats, by = "player") |> 
+  mutate(
+    across(c(passes_given, passes_received), ~ replace_na(.x, 0)),
+    participation = passes_given + passes_received,
+    participation_share = participation / sum(participation)
+  )
+
+nodes |> 
+  arrange(desc(participation)) |> 
+  kable(digits = 3)
+```
+
+## 5. Mirar la matriz de adyacencia
+
+La misma red puede verse como matriz. Las filas indican quién entrega el pase y las columnas quién lo recibe.
+
+Esta vista es menos visual que el grafo, pero ayuda a reconocer pares fuertes y a preparar análisis más formales.
+
+```{r}
+# Create an adjacency matrix from the edge list.
+adjacency <- edges |> 
+  select(from_player, to_player, pass_count) |> 
+  pivot_wider(
+    names_from = to_player,
+    values_from = pass_count,
+    values_fill = 0
+  ) |> 
+  arrange(from_player)
+
+adjacency |> 
+  kable()
+```
+
+## 6. Dibujar la red sobre una cancha
+
+El gráfico combina tres ideas:
+
+- la posición del jugador en la cancha;
+- el tamaño del nodo según participación;
+- el grosor de la flecha según cantidad de pases.
+
+Para no saturar la imagen, mostramos solo conexiones con al menos `2` pases.
+
+```{r}
+# Keep only stronger connections for readability.
+min_passes <- 2
+plot_edges <- edges |> 
+  filter(pass_count >= min_passes)
+
+# Draw a simple football pitch with ggplot2.
+pitch <- ggplot() +
+  annotate("rect", xmin = 0, xmax = 105, ymin = 0, ymax = 68,
+           fill = "#edf7f0", color = "#8aa99a", linewidth = 0.8) +
+  annotate("segment", x = 52.5, xend = 52.5, y = 0, yend = 68,
+           color = "#c4d4cc", linewidth = 0.5) +
+  annotate("rect", xmin = 0, xmax = 16.5, ymin = 13.84, ymax = 54.16,
+           fill = NA, color = "#c4d4cc", linewidth = 0.5) +
+  annotate("rect", xmin = 88.5, xmax = 105, ymin = 13.84, ymax = 54.16,
+           fill = NA, color = "#c4d4cc", linewidth = 0.5) +
+  annotate("point", x = 52.5, y = 34, color = "#c4d4cc", size = 1.5) +
+  coord_fixed(xlim = c(-3, 108), ylim = c(-3, 71), expand = FALSE) +
+  theme_void()
+
+network_plot <- pitch +
+  geom_segment(
+    data = plot_edges,
+    aes(
+      x = x_start,
+      y = y_start,
+      xend = x_end,
+      yend = y_end,
+      linewidth = pass_count
+    ),
+    color = "#2563eb",
+    alpha = 0.42,
+    arrow = arrow(length = unit(0.16, "inches")),
+    lineend = "round"
+  ) +
+  geom_point(
+    data = nodes,
+    aes(x = x, y = y, size = participation),
+    color = "#0f766e",
+    alpha = 0.9
+  ) +
+  geom_text(
+    data = nodes,
+    aes(x = x, y = y + 3, label = player),
+    size = 3.2,
+    fontface = "bold",
+    color = "#102133"
+  ) +
+  scale_size_continuous(range = c(4, 11), guide = "none") +
+  scale_linewidth_continuous(range = c(0.8, 4.2), guide = "none") +
+  labs(
+    title = "Red de pases del Equipo Demo",
+    subtitle = "Nodo = jugador; tamaño = participación; flecha = pase completado; grosor = frecuencia"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, color = "#102133"),
+    plot.subtitle = element_text(size = 10, color = "#5f7288")
+  )
+
+network_plot
+```
+
+```{r}
+# Save the plot for reuse in an article or interactive artifact.
+ggsave(
+  filename = "red_pases_demo_R.png",
+  plot = network_plot,
+  width = 10,
+  height = 6.5,
+  dpi = 180
+)
+```
+
+## 7. Interpretar la red
+
+Una red de pases no dice automáticamente quién jugó “mejor”. Lo que muestra es una estructura de circulación:
+
+- quién participa más en la posesión;
+- qué conexiones se repiten;
+- si el equipo sale por una banda, por el centro o alterna rutas;
+- si hay jugadores puente que conectan defensa, mediocampo y ataque.
+
+```{r}
+# Create a compact interpretation table.
+player_summary <- nodes |> 
+  mutate(
+    participation_share = round(participation_share, 3)
+  ) |> 
+  select(player, passes_given, passes_received, participation, participation_share) |> 
+  arrange(desc(participation))
+
+player_summary |> 
+  kable()
+```
+
+```{r}
+# Identify the strongest pass combinations.
+strongest_connections <- edges |> 
+  select(from_player, to_player, pass_count) |> 
+  slice_head(n = 8)
+
+strongest_connections |> 
+  kable()
+```
+
+## 8. Cómo se conecta con el repositorio original
+
+El repositorio clonado (`Dato-Futbol/passing-networks`) hace una versión más completa de esta misma idea, especialmente en R:
+
+- usa datos reales de eventos de StatsBomb o tracking de Metrica Sports;
+- ubica jugadores en la cancha usando información de origen/destino de pases;
+- permite configurar dirección de pases, tamaño de nodos, grosor de aristas, convex hull y estilo del campo;
+- genera visualizaciones listas para análisis futbolístico.
+
+Este documento reduce el problema a su esqueleto para que sea más transparente:
+
+1. tabla de pases;
+2. lista de aristas;
+3. tabla de nodos;
+4. matriz de adyacencia;
+5. visualización;
+6. interpretación.
+
+Si luego queremos usar datos reales, el siguiente paso es reemplazar `pases_futbol_demo.csv` por una tabla de eventos con columnas equivalentes.
+
+```{r}
+# Save derived tables for a future interactive site or handout.
+write_csv(edges, "red_pases_edge_list_R.csv")
+write_csv(nodes, "red_pases_nodes_R.csv")
+write_csv(adjacency, "red_pases_adjacency_matrix_R.csv")
+
+cat("Saved: red_pases_edge_list_R.csv\n")
+cat("Saved: red_pases_nodes_R.csv\n")
+cat("Saved: red_pases_adjacency_matrix_R.csv\n")
+```
+
+## Preguntas para cerrar
+
+- ¿Qué jugador parece organizar la circulación del equipo? ¿Por qué?
+- ¿La red sugiere una salida más central o por bandas?
+- ¿Qué se perdería si solo miráramos cantidad total de pases y no la estructura de conexiones?
+- ¿Qué cambiaría si incluyéramos pases incompletos?
+- ¿Qué variable adicional sería útil para enriquecer esta red: tiempo, zona, presión rival, valor esperado del pase u otra?

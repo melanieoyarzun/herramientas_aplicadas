@@ -1,0 +1,11 @@
+from_player,Central_D,Central_I,Delantero,Extremo_D,Extremo_I,Lateral_D,Lateral_I,Medio_5,Medio_8
+Central_D,0,1,0,0,0,1,0,1,0
+Central_I,1,0,0,0,0,0,1,2,0
+Delantero,0,0,0,1,0,0,0,0,1
+Extremo_D,0,0,2,0,0,0,0,0,2
+Extremo_I,0,0,1,0,0,0,1,0,0
+Lateral_D,0,0,0,2,0,0,0,0,0
+Lateral_I,0,0,0,0,1,0,0,1,0
+Medio_5,1,0,0,0,0,1,0,0,3
+Medio_8,0,0,3,2,1,0,0,1,0
+Portero,1,2,0,0,0,0,0,0,0

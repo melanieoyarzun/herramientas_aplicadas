@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Herramienta práctica U5 · Redes de pases en fútbol</title>
+  <style>
+    :root {
+      --bg: #eef3f7;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --muted: #60758d;
+      --line: #ced9e5;
+      --accent: #1e6de0;
+      --accent-soft: #dfeafe;
+      --accent-2: #0f8a6c;
+      --code-bg: #edf1f5;
+      --code-ink: #203247;
+      --warm: #f4efe4;
+      --green-soft: #edf8f3;
+      --shadow: 0 16px 50px rgba(23, 50, 77, 0.10);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(30,109,224,0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(15,138,108,0.12), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .hero,
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(206, 217, 229, 0.95);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px 30px 34px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      line-height: 1.08;
+      color: var(--ink);
+    }
+
+    h1 {
+      margin-top: 18px;
+      font-size: clamp(2.35rem, 4.1vw, 3.75rem);
+      max-width: 100%;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .lead {
+      margin: 18px 0 0;
+      max-width: 82ch;
+      font-size: 1.2rem;
+      color: var(--muted);
+    }
+
+    .byline {
+      margin: 12px 0 0;
+      font-size: 0.98rem;
+      color: var(--muted);
+    }
+
+    .byline a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .byline a:hover { text-decoration: underline; }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .cta.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .panel {
+      padding: 26px;
+      margin-bottom: 22px;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .mini-card {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fdfefe, #f5f8fb);
+    }
+
+    .mini-card h2,
+    .mini-card h3 {
+      font-size: 1.08rem;
+      margin-bottom: 10px;
+    }
+
+    .route-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .route-btn {
+      display: inline-flex;
+      cursor: pointer;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .route-btn.active {
+      background: var(--accent-soft);
+      border-color: rgba(30, 109, 224, 0.28);
+      color: var(--accent);
+    }
+
+    .route-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 0.84rem;
+    }
+
+    .route-panel {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #fdfefe, #f5f8fb);
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    ul {
+      margin: 12px 0 0 1.2rem;
+      padding: 0;
+    }
+
+    .step-section { padding-top: 10px; }
+
+    .step-section + .step-section {
+      margin-top: 18px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .step-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--warm);
+      color: #6a5220;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .code-block {
+      margin-top: 14px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border: 1px solid rgba(23, 50, 77, 0.12);
+    }
+
+    .code-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      background: rgba(23, 50, 77, 0.05);
+    }
+
+    .code-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .code-tab {
+      border: 1px solid rgba(23, 50, 77, 0.16);
+      background: #fff;
+      color: #48627e;
+      border-radius: 999px;
+      min-height: 32px;
+      padding: 0 13px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .code-tab.active {
+      border-color: rgba(30, 109, 224, 0.35);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .code-title {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: #48627e;
+    }
+
+    .code-pane { display: none; }
+    .code-pane.active { display: block; }
+
+    pre {
+      margin: 0;
+      padding: 20px 22px 58px;
+      overflow-x: auto;
+      font-size: 0.94rem;
+      line-height: 1.58;
+      white-space: pre;
+      position: relative;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    .copy-btn {
+      float: right;
+      margin: -48px 18px 16px 0;
+      position: relative;
+      z-index: 2;
+      border: 1px solid rgba(23, 50, 77, 0.14);
+      background: #fff;
+      color: #48627e;
+      border-radius: 999px;
+      min-height: 34px;
+      padding: 0 14px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .comment { color: #8b9aab; font-style: italic; }
+    .keyword { color: #7c4dff; font-weight: 800; }
+    .fn { color: #1e6de0; font-weight: 800; }
+    .string { color: #0f8a6c; }
+
+    .result-box {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(15, 138, 108, 0.18);
+      background: var(--green-soft);
+    }
+
+    .result-box h3 {
+      color: var(--accent-2);
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(206, 217, 229, 0.8);
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e6edf4;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f4f7fb;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(206, 217, 229, 0.9);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.9rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+
+    .network-img {
+      display: block;
+      width: 100%;
+      max-width: 960px;
+      margin: 12px auto 0;
+      border-radius: 22px;
+      border: 1px solid rgba(206, 217, 229, 0.9);
+      background: #fff;
+    }
+
+    .callout {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      border-left: 4px solid var(--accent);
+      background: #f5f8fc;
+      color: var(--muted);
+    }
+
+    .prompt-box {
+      margin-top: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(163, 116, 36, 0.25);
+      background: #fff8ec;
+      overflow: hidden;
+    }
+
+    .prompt-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      color: #7a5412;
+      font-weight: 800;
+      border-bottom: 1px solid rgba(163, 116, 36, 0.18);
+    }
+
+    .prompt-top .copy-btn {
+      float: none;
+      margin: 0;
+    }
+
+    .prompt-box pre {
+      padding-bottom: 24px;
+      white-space: pre-wrap;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 920px) {
+      h1 { white-space: normal; }
+      .grid-two { grid-template-columns: 1fr; }
+      .page { padding: 22px 14px 56px; }
+      .hero, .panel { border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Herramienta práctica · U5</span>
+        <h1>Redes de pases en fútbol</h1>
+        <p class="lead">Convierte una tabla de pases en una red: los jugadores son nodos, los pases son enlaces y la estructura permite ver cómo circula el juego.</p>
+        <p class="byline">Preparado por <a href="https://moyarzun.netlify.app" target="_blank" rel="noopener">Melanie Oyarzun</a></p>
+        <div class="cta-row">
+          <a class="cta primary" href="https://github.com/Dato-Futbol/passing-networks" target="_blank" rel="noopener">Ver repo original</a>
+          <a class="cta" href="./u5_redes_pases_futbol_python.ipynb" download>Descargar Python Notebook</a>
+          <a class="cta" href="./u5_redes_pases_futbol_R.qmd" download>Descargar R Quarto</a>
+          <a class="cta" href="./pases_futbol_demo.csv" download>Descargar dataset</a>
+          <a class="cta" href="./red_pases_demo.svg" download>Descargar gráfico SVG</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid-two">
+        <article class="mini-card">
+          <h2>Qué aprenderás aquí</h2>
+          <ul>
+            <li>Cómo pasar desde una tabla de eventos a una red.</li>
+            <li>Qué son nodos, aristas, pesos y matriz de adyacencia.</li>
+            <li>Cómo leer la circulación de pases sin quedarse solo en totales.</li>
+          </ul>
+        </article>
+        <article class="mini-card">
+          <h2>Qué encontrarás aquí</h2>
+          <ul>
+            <li>Código equivalente en Python y R.</li>
+            <li>Salidas intercaladas: tablas, matriz y gráfico.</li>
+            <li>Una sección final para replicarlo o adaptarlo con IA.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Ruta de trabajo</h2>
+      <div class="route-buttons" aria-label="Ruta de trabajo">
+        <button class="route-btn active" data-route="datos"><span class="route-number">1</span> Datos</button>
+        <button class="route-btn" data-route="aristas"><span class="route-number">2</span> Aristas</button>
+        <button class="route-btn" data-route="nodos"><span class="route-number">3</span> Nodos</button>
+        <button class="route-btn" data-route="matriz"><span class="route-number">4</span> Matriz</button>
+        <button class="route-btn" data-route="red"><span class="route-number">5</span> Red</button>
+        <button class="route-btn" data-route="interpretar"><span class="route-number">6</span> Interpretar</button>
+      </div>
+      <div class="route-panel" id="route-panel">Partimos de una tabla donde cada fila representa un pase: quién entrega, quién recibe, coordenadas de inicio y destino, minuto y resultado.</div>
+    </section>
+
+    <section class="panel">
+      <article class="step-section" id="paso-1">
+        <div class="step-header">
+          <span class="tag">Paso 1</span>
+          <h2 class="step-title">Cargar los pases</h2>
+        </div>
+        <p>El caso parte desde una tabla de eventos. En datos reales podría venir de StatsBomb o Metrica Sports; aquí usamos un CSV pequeño para que el flujo sea reproducible.</p>
+
+        <div class="code-block">
+          <div class="code-top">
+            <div class="code-tabs">
+              <button class="code-tab active" data-target="step1-python">Python</button>
+              <button class="code-tab" data-target="step1-r">R</button>
+            </div>
+            <span class="code-title">Carga de datos</span>
+          </div>
+          <div class="code-pane active" id="step1-python">
+            <pre><code><span class="comment"># Load the demo pass event data.</span>
+<span class="keyword">from</span> pathlib <span class="keyword">import</span> Path
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+
+DATA_PATH = Path(<span class="string">"pases_futbol_demo.csv"</span>)
+passes = pd.<span class="fn">read_csv</span>(DATA_PATH)
+
+passes.<span class="fn">head</span>(8)</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+          <div class="code-pane" id="step1-r">
+            <pre><code><span class="comment"># Load the demo pass event data.</span>
+library(readr)
+library(dplyr)
+library(knitr)
+
+passes &lt;- read_csv(<span class="string">"pases_futbol_demo.csv"</span>, show_col_types = FALSE)
+
+passes |&gt; 
+  head(8) |&gt; 
+  kable()</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <h3>Salida observada</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>minute</th><th>team</th><th>from_player</th><th>to_player</th><th>x_start</th><th>y_start</th><th>x_end</th><th>y_end</th><th>outcome</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>3</td><td>Equipo Demo</td><td>Portero</td><td>Central_I</td><td>8</td><td>34</td><td>24</td><td>23</td><td>Complete</td></tr>
+                <tr><td>4</td><td>Equipo Demo</td><td>Central_I</td><td>Medio_5</td><td>25</td><td>23</td><td>42</td><td>32</td><td>Complete</td></tr>
+                <tr><td>5</td><td>Equipo Demo</td><td>Medio_5</td><td>Medio_8</td><td>43</td><td>32</td><td>56</td><td>38</td><td>Complete</td></tr>
+                <tr><td>6</td><td>Equipo Demo</td><td>Medio_8</td><td>Extremo_D</td><td>58</td><td>38</td><td>77</td><td>55</td><td>Complete</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <article class="step-section" id="paso-2">
+        <div class="step-header">
+          <span class="tag">Paso 2</span>
+          <h2 class="step-title">Crear la lista de aristas</h2>
+        </div>
+        <p>La <strong>edge list</strong> resume quién le pasa a quién y cuántas veces. El peso del enlace será la frecuencia de pases completados entre dos jugadores.</p>
+
+        <div class="code-block">
+          <div class="code-top">
+            <div class="code-tabs">
+              <button class="code-tab active" data-target="step2-python">Python</button>
+              <button class="code-tab" data-target="step2-r">R</button>
+            </div>
+            <span class="code-title">Edge list ponderada</span>
+          </div>
+          <div class="code-pane active" id="step2-python">
+            <pre><code><span class="comment"># Build a directed weighted edge list.</span>
+completed = passes.<span class="fn">query</span>(<span class="string">"outcome == 'Complete'"</span>).<span class="fn">copy</span>()
+
+edges = (
+    completed
+    .<span class="fn">groupby</span>([<span class="string">"from_player"</span>, <span class="string">"to_player"</span>], as_index=False)
+    .<span class="fn">agg</span>(
+        pass_count=(<span class="string">"minute"</span>, <span class="string">"size"</span>),
+        x_start=(<span class="string">"x_start"</span>, <span class="string">"mean"</span>),
+        y_start=(<span class="string">"y_start"</span>, <span class="string">"mean"</span>),
+        x_end=(<span class="string">"x_end"</span>, <span class="string">"mean"</span>),
+        y_end=(<span class="string">"y_end"</span>, <span class="string">"mean"</span>),
+    )
+    .<span class="fn">sort_values</span>(<span class="string">"pass_count"</span>, ascending=False)
+)</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+          <div class="code-pane" id="step2-r">
+            <pre><code><span class="comment"># Build a directed weighted edge list.</span>
+completed &lt;- passes |&gt; 
+  filter(outcome == <span class="string">"Complete"</span>)
+
+edges &lt;- completed |&gt; 
+  group_by(from_player, to_player) |&gt; 
+  summarise(
+    pass_count = n(),
+    x_start = mean(x_start),
+    y_start = mean(y_start),
+    x_end = mean(x_end),
+    y_end = mean(y_end),
+    .groups = <span class="string">"drop"</span>
+  ) |&gt; 
+  arrange(desc(pass_count))</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <h3>Conexiones más frecuentes</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>from_player</th><th>to_player</th><th>pass_count</th></tr></thead>
+              <tbody>
+                <tr><td>Medio_5</td><td>Medio_8</td><td>3</td></tr>
+                <tr><td>Medio_8</td><td>Delantero</td><td>3</td></tr>
+                <tr><td>Central_I</td><td>Medio_5</td><td>2</td></tr>
+                <tr><td>Extremo_D</td><td>Delantero</td><td>2</td></tr>
+                <tr><td>Extremo_D</td><td>Medio_8</td><td>2</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <article class="step-section" id="paso-3">
+        <div class="step-header">
+          <span class="tag">Paso 3</span>
+          <h2 class="step-title">Crear la tabla de nodos</h2>
+        </div>
+        <p>Los nodos son jugadores. Su posición se estima combinando dónde inician y dónde reciben pases. Su tamaño se asocia a la participación en la circulación.</p>
+
+        <div class="code-block">
+          <div class="code-top">
+            <div class="code-tabs">
+              <button class="code-tab active" data-target="step3-python">Python</button>
+              <button class="code-tab" data-target="step3-r">R</button>
+            </div>
+            <span class="code-title">Nodos y participación</span>
+          </div>
+          <div class="code-pane active" id="step3-python">
+            <pre><code><span class="comment"># Estimate player positions from pass origins and receptions.</span>
+origins = completed[[<span class="string">"from_player"</span>, <span class="string">"x_start"</span>, <span class="string">"y_start"</span>]].<span class="fn">rename</span>(
+    columns={<span class="string">"from_player"</span>: <span class="string">"player"</span>, <span class="string">"x_start"</span>: <span class="string">"x"</span>, <span class="string">"y_start"</span>: <span class="string">"y"</span>}
+)
+receptions = completed[[<span class="string">"to_player"</span>, <span class="string">"x_end"</span>, <span class="string">"y_end"</span>]].<span class="fn">rename</span>(
+    columns={<span class="string">"to_player"</span>: <span class="string">"player"</span>, <span class="string">"x_end"</span>: <span class="string">"x"</span>, <span class="string">"y_end"</span>: <span class="string">"y"</span>}
+)
+positions = pd.<span class="fn">concat</span>([origins, receptions], ignore_index=True)
+
+node_positions = positions.<span class="fn">groupby</span>(<span class="string">"player"</span>, as_index=False).<span class="fn">agg</span>(x=(<span class="string">"x"</span>, <span class="string">"mean"</span>), y=(<span class="string">"y"</span>, <span class="string">"mean"</span>))</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+          <div class="code-pane" id="step3-r">
+            <pre><code><span class="comment"># Estimate player positions from pass origins and receptions.</span>
+origins &lt;- completed |&gt; 
+  transmute(player = from_player, x = x_start, y = y_start)
+
+receptions &lt;- completed |&gt; 
+  transmute(player = to_player, x = x_end, y = y_end)
+
+node_positions &lt;- bind_rows(origins, receptions) |&gt; 
+  group_by(player) |&gt; 
+  summarise(x = mean(x), y = mean(y), .groups = <span class="string">"drop"</span>)</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <h3>Jugadores con mayor participación</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>player</th><th>passes_given</th><th>passes_received</th><th>participation</th><th>participation_share</th></tr></thead>
+              <tbody>
+                <tr><td>Medio_8</td><td>7</td><td>6</td><td>13</td><td>0.191</td></tr>
+                <tr><td>Medio_5</td><td>5</td><td>5</td><td>10</td><td>0.147</td></tr>
+                <tr><td>Extremo_D</td><td>4</td><td>5</td><td>9</td><td>0.132</td></tr>
+                <tr><td>Delantero</td><td>2</td><td>6</td><td>8</td><td>0.118</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <article class="step-section" id="paso-4">
+        <div class="step-header">
+          <span class="tag">Paso 4</span>
+          <h2 class="step-title">Mirar la matriz de adyacencia</h2>
+        </div>
+        <p>La matriz muestra la misma red en formato tabular: las filas son quienes pasan y las columnas quienes reciben.</p>
+
+        <div class="code-block">
+          <div class="code-top">
+            <div class="code-tabs">
+              <button class="code-tab active" data-target="step4-python">Python</button>
+              <button class="code-tab" data-target="step4-r">R</button>
+            </div>
+            <span class="code-title">Matriz de adyacencia</span>
+          </div>
+          <div class="code-pane active" id="step4-python">
+            <pre><code><span class="comment"># Create an adjacency matrix from the edge list.</span>
+adjacency = (
+    edges
+    .<span class="fn">pivot</span>(index=<span class="string">"from_player"</span>, columns=<span class="string">"to_player"</span>, values=<span class="string">"pass_count"</span>)
+    .<span class="fn">fillna</span>(0)
+    .<span class="fn">astype</span>(int)
+)
+
+adjacency</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+          <div class="code-pane" id="step4-r">
+            <pre><code><span class="comment"># Create an adjacency matrix from the edge list.</span>
+adjacency &lt;- edges |&gt; 
+  select(from_player, to_player, pass_count) |&gt; 
+  pivot_wider(
+    names_from = to_player,
+    values_from = pass_count,
+    values_fill = 0
+  ) |&gt; 
+  arrange(from_player)</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <h3>Fragmento de matriz</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>from_player</th><th>Medio_8</th><th>Delantero</th><th>Medio_5</th><th>Extremo_D</th><th>Central_I</th></tr></thead>
+              <tbody>
+                <tr><td>Central_I</td><td>0</td><td>0</td><td>2</td><td>0</td><td>0</td></tr>
+                <tr><td>Extremo_D</td><td>2</td><td>2</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td>Medio_5</td><td>3</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                <tr><td>Medio_8</td><td>0</td><td>3</td><td>1</td><td>2</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+
+      <article class="step-section" id="paso-5">
+        <div class="step-header">
+          <span class="tag">Paso 5</span>
+          <h2 class="step-title">Dibujar la red sobre la cancha</h2>
+        </div>
+        <p>El gráfico permite leer estructura: dónde circula el balón, qué conexiones pesan más y qué jugadores articulan la salida o el ataque.</p>
+
+        <div class="code-block">
+          <div class="code-top">
+            <div class="code-tabs">
+              <button class="code-tab active" data-target="step5-python">Python</button>
+              <button class="code-tab" data-target="step5-r">R</button>
+            </div>
+            <span class="code-title">Visualización</span>
+          </div>
+          <div class="code-pane active" id="step5-python">
+            <pre><code><span class="comment"># Build a simple SVG pitch and passing network.</span>
+svg_path = <span class="fn">make_passing_network_svg</span>(nodes, edges, min_passes=2)
+print(f<span class="string">"Saved: {svg_path}"</span>)</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+          <div class="code-pane" id="step5-r">
+            <pre><code><span class="comment"># Draw a simple football pitch with ggplot2.</span>
+network_plot &lt;- pitch +
+  geom_segment(
+    data = plot_edges,
+    aes(x = x_start, y = y_start, xend = x_end, yend = y_end, linewidth = pass_count),
+    color = <span class="string">"#2563eb"</span>,
+    alpha = 0.42,
+    arrow = arrow(length = unit(0.16, <span class="string">"inches"</span>)),
+    lineend = <span class="string">"round"</span>
+  ) +
+  geom_point(data = nodes, aes(x = x, y = y, size = participation), color = <span class="string">"#0f766e"</span>, alpha = 0.9)</code></pre>
+            <button class="copy-btn">Copiar</button>
+          </div>
+        </div>
+
+        <div class="result-box">
+          <h3>Red resultante</h3>
+          <img class="network-img" src="./red_pases_demo.svg" alt="Red de pases del equipo demo sobre una cancha de fútbol">
+          <div class="metric-grid">
+            <div class="metric"><strong>34</strong>Pases completados usados.</div>
+            <div class="metric"><strong>10</strong>Jugadores representados como nodos.</div>
+            <div class="metric"><strong>2+</strong>Pases mínimos para mostrar una conexión.</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="step-section" id="paso-6">
+        <div class="step-header">
+          <span class="tag">Paso 6</span>
+          <h2 class="step-title">Interpretar la estructura</h2>
+        </div>
+        <p>Una red de pases no dice automáticamente quién jugó mejor. Lo que muestra es una estructura de circulación: quién participa, qué rutas se repiten y cómo se conectan defensa, mediocampo y ataque.</p>
+
+        <div class="result-box">
+          <h3>Lectura rápida</h3>
+          <ul>
+            <li><strong>Medio_8</strong> concentra la mayor participación y parece articular la progresión hacia el ataque.</li>
+            <li><strong>Medio_5 → Medio_8</strong> y <strong>Medio_8 → Delantero</strong> son las conexiones más repetidas.</li>
+            <li>La red sugiere una circulación donde el mediocampo funciona como puente entre salida y finalización.</li>
+          </ul>
+        </div>
+
+        <div class="callout">
+          La pregunta importante no es solo “quién dio más pases”, sino <strong>qué posición ocupa cada jugador en la circulación</strong> y qué conexiones hacen posible que el equipo avance.
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Replicarlo con IA</h2>
+      <p>Una IA puede ayudarte a escribir o adaptar gran parte del código, pero sigue siendo clave que tú definas el problema, entiendas qué representa cada variable y sepas evaluar si el resultado realmente sirve.</p>
+      <div class="prompt-box">
+        <div class="prompt-top">
+          <span>Prompt sugerido con archivos cargados</span>
+          <button class="copy-btn prompt-copy">Copiar prompt</button>
+        </div>
+        <pre><code>Quiero construir una herramienta pedagógica sobre redes de pases en fútbol usando los archivos que acabo de cargar.
+
+Archivo principal:
+- pases_futbol_demo.csv
+
+Primero revisa el archivo cargado:
+1. lee el CSV;
+2. muestra las primeras filas;
+3. identifica sus columnas;
+4. confirma que contiene: minute, team, from_player, to_player, x_start, y_start, x_end, y_end y outcome.
+
+Luego construye el análisis paso a paso:
+1. filtra los pases completados;
+2. construye una edge list ponderada por cantidad de pases entre jugadores;
+3. crea una tabla de nodos con posición promedio, pases dados, pases recibidos y participación total;
+4. crea una matriz de adyacencia;
+5. dibuja la red sobre una cancha, donde el tamaño del nodo represente participación y el grosor de la flecha represente frecuencia;
+6. entrega una interpretación breve sobre qué jugadores articulan la circulación y qué conexiones son más relevantes.
+
+Escribe una versión en Python. Usa comentarios claros, salidas intermedias y una explicación pensada para estudiantes que están aprendiendo ciencia de redes aplicada a negocios y deporte.</code></pre>
+      </div>
+      <p class="footer-note">Puedes cambiar el prompt para hacerlo en R u otro lenguaje si lo prefieres.</p>
+      <p class="footer-note"><strong>Lo importante:</strong> la IA puede acelerar el código, pero la calidad del análisis depende de formular bien la pregunta y revisar si la red realmente representa el fenómeno que queremos entender.</p>
+    </section>
+  </main>
+
+  <script>
+    const routeText = {
+      datos: "Partimos de una tabla donde cada fila representa un pase: quién entrega, quién recibe, coordenadas de inicio y destino, minuto y resultado.",
+      aristas: "Agrupamos pases completados para construir conexiones ponderadas: cada enlace resume cuántas veces un jugador le pasa a otro.",
+      nodos: "Estimamos la posición y participación de cada jugador para ubicarlo en la cancha y dimensionar su peso visual.",
+      matriz: "Convertimos la red a una matriz de adyacencia, útil para ver patrones y preparar análisis más formales.",
+      red: "Dibujamos nodos y flechas sobre la cancha para hacer visible la estructura de circulación del balón.",
+      interpretar: "Cerramos leyendo qué jugadores articulan el juego y qué conexiones sostienen la progresión del equipo."
+    };
+
+    document.querySelectorAll(".route-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".route-btn").forEach((b) => b.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById("route-panel").textContent = routeText[button.dataset.route];
+      });
+    });
+
+    document.querySelectorAll(".code-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const block = tab.closest(".code-block");
+        block.querySelectorAll(".code-tab").forEach((t) => t.classList.remove("active"));
+        block.querySelectorAll(".code-pane").forEach((pane) => pane.classList.remove("active"));
+        tab.classList.add("active");
+        block.querySelector(`#${tab.dataset.target}`).classList.add("active");
+      });
+    });
+
+    function copyTextFromButton(button) {
+      const container = button.closest(".code-pane") || button.closest(".prompt-box");
+      const text = container.querySelector("code").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const original = button.textContent;
+        button.textContent = "Copiado";
+        setTimeout(() => { button.textContent = original; }, 1200);
+      });
+    }
+
+    document.querySelectorAll(".copy-btn").forEach((button) => {
+      button.addEventListener("click", () => copyTextFromButton(button));
+    });
+  </script>
+</body>
+</html>

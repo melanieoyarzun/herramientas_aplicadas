@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Herramientas aplicadas de Data Science</title>
+  <style>
+    :root {
+      --bg: #eef3f7;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --muted: #60758d;
+      --line: #ced9e5;
+      --accent: #1e6de0;
+      --accent-soft: #dfeafe;
+      --shadow: 0 16px 50px rgba(23, 50, 77, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Aptos", "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(30,109,224,0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(15,138,108,0.12), transparent 30%),
+        var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 42px 22px 70px;
+    }
+
+    .hero,
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(206, 217, 229, 0.95);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 30px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2, p { margin-top: 0; }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(2.3rem, 5vw, 4.2rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .lead {
+      max-width: 76ch;
+      font-size: 1.18rem;
+      color: var(--muted);
+      margin-bottom: 0;
+    }
+
+    .byline {
+      margin-top: 14px;
+      color: var(--muted);
+    }
+
+    a {
+      color: var(--accent);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      min-height: 250px;
+    }
+
+    .unit {
+      display: inline-flex;
+      align-self: flex-start;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #f4efe4;
+      color: #6a5220;
+      font-weight: 800;
+    }
+
+    .card h2 {
+      margin: 18px 0 10px;
+      font-size: 1.4rem;
+      line-height: 1.1;
+    }
+
+    .card p {
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
+    .button {
+      margin-top: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .button:hover {
+      text-decoration: none;
+      filter: brightness(0.98);
+    }
+
+    @media (max-width: 880px) {
+      .grid { grid-template-columns: 1fr; }
+      main { padding: 24px 14px 52px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <span class="eyebrow">Herramientas aplicadas</span>
+      <h1>Data Science aplicada</h1>
+      <p class="lead">Recursos navegables, notebooks y datos de ejemplo para practicar análisis de clasificación, redes y texto.</p>
+      <p class="byline">Preparado por <a href="https://moyarzun.netlify.app" target="_blank" rel="noopener">Melanie Oyarzun</a></p>
+    </section>
+
+    <section class="grid" aria-label="Herramientas disponibles">
+      <article class="card">
+        <span class="unit">Unidad 4</span>
+        <h2>Clasificación de fraude</h2>
+        <p>Ejemplo de clasificación binaria con código Python/R, salidas intermedias y comparación de enfoques.</p>
+        <a class="button" href="u4_clasificacion_fraude/">Abrir herramienta</a>
+      </article>
+
+      <article class="card">
+        <span class="unit">Unidad 5</span>
+        <h2>Redes de pases en fútbol</h2>
+        <p>Construcción de una red desde una tabla de pases: edge list, nodos, matriz y visualización sobre cancha.</p>
+        <a class="button" href="u5_redes_pases_futbol/">Abrir herramienta</a>
+      </article>
+
+      <article class="card">
+        <span class="unit">Unidad 6</span>
+        <h2>Análisis de sentimientos</h2>
+        <p>Flujo reproducible para analizar reseñas, tokenizar texto, revisar negaciones y comparar salidas.</p>
+        <a class="button" href="u6_analisis_sentimientos/">Abrir herramienta</a>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
