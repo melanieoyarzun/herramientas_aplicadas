@@ -6,6 +6,8 @@ Repositorio con herramientas prácticas, notebooks y datos de ejemplo para curso
 
 | Unidad | Herramienta | Sitio local |
 |---|---|---|
+| U2 | Dashboard interactivo de gestión de personas | [`u2_dashboard_personas/`](u2_dashboard_personas/) |
+| U3 | Caso interactivo de A/B testing | [`u3_abtesting_interactivo/`](u3_abtesting_interactivo/) |
 | U4 | Clasificación de fraude | [`u4_clasificacion_fraude/`](u4_clasificacion_fraude/) |
 | U5 | Redes de pases en fútbol | [`u5_redes_pases_futbol/`](u5_redes_pases_futbol/) |
 | U6 | Análisis de sentimientos | [`u6_analisis_sentimientos/`](u6_analisis_sentimientos/) |

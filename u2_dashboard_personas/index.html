@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard interactivo de Gestión de Personas</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --ink: #16324f;
+      --muted: #66768b;
+      --line: #d9e0ea;
+      --blue: #2f72d6;
+      --teal: #138a8a;
+      --orange: #cf7a1d;
+      --rose: #b94b68;
+      --shadow: 0 12px 30px rgba(16, 39, 68, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(47, 114, 214, 0.09), transparent 24%),
+        radial-gradient(circle at top right, rgba(19, 138, 138, 0.10), transparent 20%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 36px 24px 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.45fr 0.75fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 28px 30px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(47, 114, 214, 0.1);
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3 {
+      margin: 0 0 10px;
+      line-height: 1.08;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 2.4vw, 2.75rem);
+      max-width: none;
+      width: 100%;
+      line-height: 1;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .hero-copy p + p {
+      margin-top: 14px;
+    }
+
+    .hero-note {
+      padding: 28px 30px;
+      background: linear-gradient(155deg, #18324f 0%, #214a65 100%);
+      color: #eff6ff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-note::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .hero-note p {
+      color: rgba(239, 246, 255, 0.88);
+    }
+
+    .hero-note ul {
+      margin: 18px 0 0;
+      padding-left: 18px;
+      color: rgba(239, 246, 255, 0.88);
+      line-height: 1.55;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .control {
+      padding: 14px 14px 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fbfcfe;
+    }
+
+    .control label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+
+    .control select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cfd8e5;
+      border-radius: 12px;
+      font: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .area-filter {
+      grid-column: 1 / -1;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid #cfd8e5;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.18s ease;
+      user-select: none;
+    }
+
+    .chip.active {
+      border-color: var(--blue);
+      background: rgba(47, 114, 214, 0.12);
+      color: var(--blue);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .metric-card {
+      padding: 20px;
+      min-height: 132px;
+    }
+
+    .metric-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-value {
+      font-size: clamp(1.7rem, 3.2vw, 2.7rem);
+      font-weight: 750;
+      margin-bottom: 8px;
+    }
+
+    .metric-meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .chart-panel {
+      padding: 18px 18px 14px;
+    }
+
+    .chart-panel h2 {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .chart-panel p {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .toolbar .control {
+      flex: 1 1 170px;
+      min-width: 160px;
+      padding: 12px;
+      margin: 0;
+    }
+
+    .chart-box {
+      width: 100%;
+      min-height: 320px;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 18px;
+    }
+
+    .insight-panel {
+      padding: 22px;
+    }
+
+    .insight-panel h2 {
+      font-size: 1.15rem;
+      margin-bottom: 14px;
+    }
+
+    .insight-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .footnote {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .question-panel {
+      padding: 18px 22px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #fff8ef 0%, #fffdf8 100%);
+    }
+
+    .question-panel h2 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      align-items: flex-start;
+    }
+
+    .action-btn {
+      border: 1px solid #bfd0e5;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .action-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .prompt-box {
+      width: 100%;
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px dashed #bfd0e5;
+      border-radius: 16px;
+      background: #fbfcfe;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      display: none;
+    }
+
+    .toggle-inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero,
+      .dashboard-grid,
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls,
+      .metrics {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 20px 14px 40px;
+      }
+
+      .controls,
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <article class="panel hero-copy">
+        <span class="eyebrow">Aplicación Unidad 2</span>
+        <h1>Dashboard interactivo de Gestión de Personas</h1>
+        <p>
+          Este artefacto usa datos sintéticos para mostrar cómo un <strong>KPI</strong>, una
+          <strong>serie temporal</strong>, una <strong>comparación entre áreas</strong> y una
+          <strong>distribución</strong> pueden cambiar la lectura de un mismo fenómeno.
+        </p>
+        <p>
+          El foco está puesto en <strong>contrataciones</strong>, <strong>rotación</strong> y
+          <strong>capacitaciones</strong>, incluyendo participación en cursos de
+          <strong>inglés</strong> y <strong>Excel</strong>.
+        </p>
+      </article>
+      <aside class="panel hero-note">
+        <h2>¿Qué mirar aquí?</h2>
+        <p>
+          Aquí puedes explorar un mini dashboard y observar cómo cambia la lectura cuando no miramos
+          solo un número, sino también su evolución, su distribución y sus diferencias entre áreas.
+        </p>
+        <ul>
+          <li>Elige una métrica principal.</li>
+          <li>Prueba distintos cálculos, como promedio o mediana.</li>
+          <li>Compara áreas y abre la distribución detrás del KPI.</li>
+          <li>Explora relaciones posibles entre variables, con cautela.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="panel question-panel">
+      <h2>Pregunta para explorar</h2>
+      <p>
+        Si solo miraras la <strong>rotación promedio</strong>, ¿qué podrías estar dejando fuera?
+        Prueba cambiar la métrica, abrir la distribución y comparar áreas antes de responder.
+      </p>
+    </section>
+
+    <section class="panel controls">
+      <div class="control">
+        <label for="metricSelect">Métrica principal</label>
+        <select id="metricSelect"></select>
+      </div>
+      <div class="control">
+        <label for="summarySelect">Cálculo</label>
+        <select id="summarySelect">
+          <option value="mean">Promedio</option>
+          <option value="median">Mediana</option>
+          <option value="latest">Último valor</option>
+          <option value="max">Máximo</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="monthSelect">Mes para comparar áreas</label>
+        <select id="monthSelect"></select>
+      </div>
+      <div class="control area-filter">
+        <label>Áreas</label>
+        <div class="chip-row" id="areaChips"></div>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <article class="panel metric-card">
+        <h3>Resultado seleccionado</h3>
+        <div class="metric-value" id="summaryValue">--</div>
+        <div class="metric-meta" id="summaryMeta"></div>
+      </article>
+      <article class="panel metric-card">
+        <h3>Último periodo</h3>
+        <div class="metric-value" id="latestValue">--</div>
+        <div class="metric-meta" id="latestMeta"></div>
+      </article>
+      <article class="panel metric-card">
+        <h3>Dispersión anual</h3>
+        <div class="metric-value" id="spreadValue">--</div>
+        <div class="metric-meta" id="spreadMeta"></div>
+      </article>
+      <article class="panel metric-card">
+        <h3>Lectura rápida</h3>
+        <div class="metric-meta" id="headlineInsight" style="font-size:16px;color:var(--ink);line-height:1.5;"></div>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel chart-panel">
+        <h2>Evolución temporal</h2>
+        <p>Agrega las áreas seleccionadas y observa cómo cambia la métrica a lo largo del año.</p>
+        <div class="chart-box" id="lineChart"></div>
+      </article>
+      <article class="panel chart-panel">
+        <h2>Comparación entre áreas</h2>
+        <p>
+          Permite ver diferencias entre áreas para un mes específico y cambiar la forma de comparación:
+          barras para una lectura rápida, boxplots para resumir la variación o distribuciones
+          para ver cómo se reparten los valores en cada área.
+        </p>
+        <div class="toolbar">
+          <div class="control">
+            <label for="compareViewSelect">Visualización</label>
+            <select id="compareViewSelect">
+              <option value="bar">Barras</option>
+              <option value="box">Box plot</option>
+              <option value="distribution">Distribuciones</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="boxOrientationSelect">Ejes del box plot</label>
+            <select id="boxOrientationSelect" disabled>
+              <option value="vertical">Vertical</option>
+              <option value="horizontal">Horizontal</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-box" id="barChart"></div>
+      </article>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="panel chart-panel">
+        <h2>Distribución detrás del KPI</h2>
+        <p>
+          Ordena todos los valores observados en las áreas seleccionadas y muestra media y mediana.
+          La idea es abrir lo que el resumen no alcanza a mostrar.
+        </p>
+        <div class="chart-box" id="distributionChart"></div>
+      </article>
+      <article class="panel chart-panel">
+        <h2>Cruce exploratorio entre variables</h2>
+        <p>
+          Este gráfico sugiere patrones entre dos métricas, por ejemplo entre rotación y asistencia
+          a capacitación. Sirve para abrir preguntas, no para afirmar causalidad.
+        </p>
+        <div class="toolbar">
+          <div class="control">
+            <label for="xMetricSelect">Variable X</label>
+            <select id="xMetricSelect"></select>
+          </div>
+          <div class="control">
+            <label for="yMetricSelect">Variable Y</label>
+            <select id="yMetricSelect"></select>
+          </div>
+          <div class="control">
+            <label for="scatterFocusSelect">Grupo a mirar</label>
+            <select id="scatterFocusSelect"></select>
+          </div>
+          <div class="control">
+            <label for="scatterColorSelect">Color</label>
+            <select id="scatterColorSelect">
+              <option value="area">Por área</option>
+              <option value="month">Por mes</option>
+            </select>
+            <div class="toggle-inline">
+              <input type="checkbox" id="showMarginals" />
+              <label for="showMarginals" style="margin:0;text-transform:none;letter-spacing:0;font-size:14px;font-weight:600;color:var(--muted);">Mostrar marginales</label>
+            </div>
+          </div>
+        </div>
+        <div class="chart-box" id="scatterChart"></div>
+        <div class="legend" id="areaLegend"></div>
+      </article>
+    </section>
+
+    <section class="panel insight-panel" style="margin-top:18px;">
+      <h2>¿Qué cambia cuando abrimos el dashboard?</h2>
+      <ul class="insight-list" id="insightList"></ul>
+      <div class="action-row">
+        <button class="action-btn" id="downloadDataBtn">Descargar datos</button>
+        <button class="action-btn" id="togglePromptBtn">Ver prompt para IA</button>
+        <button class="action-btn" id="copyPromptBtn">Copiar prompt</button>
+      </div>
+      <div class="prompt-box" id="promptBox"></div>
+      <div class="footnote">Datos sintéticos creados para fines pedagógicos.</div>
+    </section>
+  </main>
+
+  <script>
+    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    const areas = [
+      { key: "Operaciones", color: "#2f72d6" },
+      { key: "Comercial", color: "#138a8a" },
+      { key: "Tecnología", color: "#cf7a1d" },
+      { key: "Personas", color: "#b94b68" }
+    ];
+
+    const metrics = {
+      hires: { label: "Contrataciones", unit: "", type: "count", decimals: 0 },
+      turnover: { label: "Rotación", unit: "%", type: "rate", decimals: 1 },
+      training: { label: "Asistencia a capacitación", unit: "%", type: "rate", decimals: 1 },
+      english: { label: "Curso de inglés", unit: "%", type: "rate", decimals: 1 },
+      excel: { label: "Curso de Excel", unit: "%", type: "rate", decimals: 1 }
+    };
+
+    const synthetic = {
+      Operaciones: {
+        hires: [12, 11, 10, 12, 13, 14, 12, 11, 9, 8, 7, 9],
+        turnover: [3.2, 3.7, 4.0, 4.8, 5.3, 5.1, 4.7, 4.2, 3.9, 3.6, 3.4, 3.5],
+        training: [52, 55, 56, 58, 60, 61, 59, 57, 56, 58, 60, 62],
+        english: [18, 19, 21, 22, 24, 25, 24, 23, 22, 23, 25, 27],
+        excel: [34, 35, 37, 39, 40, 42, 41, 39, 38, 39, 41, 43]
+      },
+      Comercial: {
+        hires: [8, 9, 11, 13, 10, 9, 8, 10, 11, 12, 9, 8],
+        turnover: [4.9, 5.1, 5.6, 6.1, 5.7, 5.5, 5.0, 5.2, 5.4, 5.8, 5.2, 4.9],
+        training: [44, 46, 49, 50, 52, 53, 51, 49, 50, 52, 53, 55],
+        english: [28, 30, 31, 33, 34, 36, 35, 34, 35, 37, 38, 39],
+        excel: [20, 21, 23, 24, 26, 27, 26, 25, 25, 27, 28, 30]
+      },
+      Tecnología: {
+        hires: [5, 6, 7, 8, 7, 6, 6, 7, 8, 7, 6, 5],
+        turnover: [2.8, 2.9, 3.1, 3.3, 3.0, 2.8, 2.9, 3.1, 3.2, 3.0, 2.7, 2.6],
+        training: [61, 63, 65, 68, 69, 71, 70, 69, 68, 70, 72, 73],
+        english: [22, 23, 24, 25, 26, 28, 29, 28, 27, 28, 29, 31],
+        excel: [42, 43, 45, 47, 48, 49, 48, 47, 46, 47, 48, 50]
+      },
+      Personas: {
+        hires: [3, 4, 3, 4, 5, 4, 3, 4, 5, 4, 3, 3],
+        turnover: [2.4, 2.6, 2.8, 2.7, 2.9, 3.0, 2.8, 2.7, 2.6, 2.5, 2.4, 2.5],
+        training: [66, 68, 69, 71, 72, 74, 75, 74, 73, 74, 76, 77],
+        english: [32, 33, 34, 35, 36, 38, 39, 39, 38, 39, 40, 42],
+        excel: [36, 37, 38, 39, 40, 41, 42, 41, 40, 41, 42, 43]
+      }
+    };
+
+    const rows = [];
+    months.forEach((month, idx) => {
+      areas.forEach((area) => {
+        rows.push({
+          month,
+          monthIndex: idx,
+          area: area.key,
+          hires: synthetic[area.key].hires[idx],
+          turnover: synthetic[area.key].turnover[idx],
+          training: synthetic[area.key].training[idx],
+          english: synthetic[area.key].english[idx],
+          excel: synthetic[area.key].excel[idx]
+        });
+      });
+    });
+
+    const state = {
+      activeAreas: new Set(areas.map((a) => a.key)),
+      metric: "turnover",
+      summary: "mean",
+      monthIndex: 5,
+      compareView: "bar",
+      boxOrientation: "vertical",
+      xMetric: "training",
+      yMetric: "turnover",
+      scatterFocus: "all",
+      scatterColor: "area",
+      showMarginals: false
+    };
+
+    const metricSelect = document.getElementById("metricSelect");
+    const summarySelect = document.getElementById("summarySelect");
+    const monthSelect = document.getElementById("monthSelect");
+    const compareViewSelect = document.getElementById("compareViewSelect");
+    const boxOrientationSelect = document.getElementById("boxOrientationSelect");
+    const xMetricSelect = document.getElementById("xMetricSelect");
+    const yMetricSelect = document.getElementById("yMetricSelect");
+    const scatterFocusSelect = document.getElementById("scatterFocusSelect");
+    const scatterColorSelect = document.getElementById("scatterColorSelect");
+    const showMarginalsCheckbox = document.getElementById("showMarginals");
+    const areaChips = document.getElementById("areaChips");
+    const promptBox = document.getElementById("promptBox");
+
+    function formatValue(metricKey, value) {
+      const metric = metrics[metricKey];
+      if (!Number.isFinite(value)) return "--";
+      return `${value.toFixed(metric.decimals)}${metric.unit}`;
+    }
+
+    function median(values) {
+      const sorted = [...values].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      if (sorted.length % 2 === 0) return (sorted[mid - 1] + sorted[mid]) / 2;
+      return sorted[mid];
+    }
+
+    function mean(values) {
+      return values.reduce((sum, v) => sum + v, 0) / values.length;
+    }
+
+    function aggregateMonth(metricKey, monthIndex, activeAreas) {
+      const monthRows = rows.filter((r) => r.monthIndex === monthIndex && activeAreas.has(r.area));
+      if (!monthRows.length) return 0;
+      const values = monthRows.map((r) => r[metricKey]);
+      return metrics[metricKey].type === "count" ? values.reduce((a, b) => a + b, 0) : mean(values);
+    }
+
+    function buildSeries(metricKey, activeAreas) {
+      return months.map((_, idx) => aggregateMonth(metricKey, idx, activeAreas));
+    }
+
+    function createOption(select, value, label) {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      select.appendChild(option);
+    }
+
+    Object.entries(metrics).forEach(([key, meta]) => {
+      createOption(metricSelect, key, meta.label);
+      createOption(xMetricSelect, key, meta.label);
+      createOption(yMetricSelect, key, meta.label);
+    });
+
+    months.forEach((month, idx) => createOption(monthSelect, String(idx), month));
+    createOption(scatterFocusSelect, "all", "Todas las áreas activas");
+    areas.forEach((area) => createOption(scatterFocusSelect, area.key, area.key));
+
+    metricSelect.value = state.metric;
+    summarySelect.value = state.summary;
+    monthSelect.value = String(state.monthIndex);
+    compareViewSelect.value = state.compareView;
+    boxOrientationSelect.value = state.boxOrientation;
+    xMetricSelect.value = state.xMetric;
+    yMetricSelect.value = state.yMetric;
+    scatterFocusSelect.value = state.scatterFocus;
+    scatterColorSelect.value = state.scatterColor;
+    showMarginalsCheckbox.checked = state.showMarginals;
+
+    const allChip = document.createElement("button");
+    allChip.className = "chip active";
+    allChip.textContent = "Todas";
+    allChip.addEventListener("click", () => {
+      state.activeAreas = new Set(areas.map((a) => a.key));
+      renderChips();
+      render();
+    });
+    areaChips.appendChild(allChip);
+
+    function renderChips() {
+      areaChips.innerHTML = "";
+
+      const all = document.createElement("button");
+      all.className = `chip ${state.activeAreas.size === areas.length ? "active" : ""}`;
+      all.textContent = "Todas";
+      all.addEventListener("click", () => {
+        state.activeAreas = new Set(areas.map((a) => a.key));
+        renderChips();
+        render();
+      });
+      areaChips.appendChild(all);
+
+      areas.forEach((area) => {
+        const chip = document.createElement("button");
+        chip.className = `chip ${state.activeAreas.has(area.key) ? "active" : ""}`;
+        chip.textContent = area.key;
+        chip.addEventListener("click", () => {
+          if (state.activeAreas.has(area.key) && state.activeAreas.size > 1) {
+            state.activeAreas.delete(area.key);
+          } else {
+            state.activeAreas.add(area.key);
+          }
+          renderChips();
+          render();
+        });
+        areaChips.appendChild(chip);
+      });
+    }
+
+    function axisLabel(text, x, y, rotate = false) {
+      return `<text x="${x}" y="${y}" font-size="12" fill="#66768b" ${rotate ? `transform="rotate(-90 ${x} ${y})"` : ""}>${text}</text>`;
+    }
+
+    function renderLineChart(series, metricKey) {
+      const w = 640, h = 300, m = { top: 20, right: 20, bottom: 44, left: 50 };
+      const innerW = w - m.left - m.right;
+      const innerH = h - m.top - m.bottom;
+      const min = Math.min(...series);
+      const max = Math.max(...series);
+      const paddedMin = min === max ? min * 0.9 : min - (max - min) * 0.12;
+      const paddedMax = min === max ? max * 1.1 : max + (max - min) * 0.12;
+      const x = (i) => m.left + (i / (series.length - 1)) * innerW;
+      const y = (v) => m.top + innerH - ((v - paddedMin) / (paddedMax - paddedMin)) * innerH;
+      const points = series.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+
+      const guides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = paddedMin + (paddedMax - paddedMin) * p;
+        const py = y(val);
+        return `
+          <line x1="${m.left}" y1="${py}" x2="${w - m.right}" y2="${py}" stroke="#e4eaf2" stroke-width="1"/>
+          <text x="${m.left - 10}" y="${py + 4}" text-anchor="end" font-size="12" fill="#66768b">${formatValue(metricKey, val)}</text>
+        `;
+      }).join("");
+
+      const labels = months.map((month, i) =>
+        `<text x="${x(i)}" y="${h - 14}" text-anchor="middle" font-size="12" fill="#66768b">${month}</text>`
+      ).join("");
+
+      const dots = series.map((v, i) =>
+        `<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="#2f72d6" stroke="#ffffff" stroke-width="2"/>`
+      ).join("");
+
+      document.getElementById("lineChart").innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" aria-label="Serie temporal">
+          ${guides}
+          <line x1="${m.left}" y1="${h - m.bottom}" x2="${w - m.right}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>
+          <polyline fill="none" stroke="#2f72d6" stroke-width="4" points="${points}" />
+          ${dots}
+          ${labels}
+        </svg>
+      `;
+    }
+
+    function quartile(values, q) {
+      const sorted = [...values].sort((a, b) => a - b);
+      const pos = (sorted.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      if (sorted[base + 1] !== undefined) {
+        return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+      }
+      return sorted[base];
+    }
+
+    function renderBarChart(metricKey) {
+      const selectedRows = rows.filter((r) => r.monthIndex === state.monthIndex);
+      const values = areas.map((area) => ({
+        ...area,
+        value: selectedRows.find((r) => r.area === area.key)[metricKey]
+      }));
+      const w = 480, h = 300, m = { top: 20, right: 16, bottom: 44, left: 50 };
+      const innerW = w - m.left - m.right;
+      const innerH = h - m.top - m.bottom;
+      const max = Math.max(...values.map((v) => v.value)) * 1.15;
+      const barWidth = innerW / values.length * 0.56;
+      const gap = innerW / values.length * 0.44;
+      const y = (v) => m.top + innerH - (v / max) * innerH;
+
+      const guides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = max * p;
+        const py = y(val);
+        return `
+          <line x1="${m.left}" y1="${py}" x2="${w - m.right}" y2="${py}" stroke="#e4eaf2" stroke-width="1"/>
+          <text x="${m.left - 10}" y="${py + 4}" text-anchor="end" font-size="12" fill="#66768b">${formatValue(metricKey, val)}</text>
+        `;
+      }).join("");
+
+      const bars = values.map((item, i) => {
+        const x = m.left + i * (barWidth + gap) + 22;
+        const rectY = y(item.value);
+        const height = h - m.bottom - rectY;
+        const muted = state.activeAreas.has(item.key) ? 1 : 0.24;
+        return `
+          <rect x="${x}" y="${rectY}" width="${barWidth}" height="${height}" rx="12" fill="${item.color}" opacity="${muted}"/>
+          <text x="${x + barWidth / 2}" y="${rectY - 8}" text-anchor="middle" font-size="12" fill="#46556a">${formatValue(metricKey, item.value)}</text>
+          <text x="${x + barWidth / 2}" y="${h - 14}" text-anchor="middle" font-size="12" fill="#66768b">${item.key}</text>
+        `;
+      }).join("");
+
+      document.getElementById("barChart").innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" aria-label="Comparación por área">
+          ${guides}
+          <line x1="${m.left}" y1="${h - m.bottom}" x2="${w - m.right}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>
+          ${bars}
+        </svg>
+      `;
+    }
+
+    function renderBoxPlotChart(metricKey) {
+      const values = areas.map((area) => ({
+        ...area,
+        values: rows.filter((r) => r.area === area.key).map((r) => r[metricKey]).sort((a, b) => a - b)
+      }));
+      const allValues = values.flatMap((v) => v.values);
+      const w = 480, h = 300;
+      const vertical = state.boxOrientation === "vertical";
+      const m = vertical
+        ? { top: 24, right: 16, bottom: 56, left: 52 }
+        : { top: 24, right: 18, bottom: 44, left: 100 };
+      const innerW = w - m.left - m.right;
+      const innerH = h - m.top - m.bottom;
+      const min = Math.min(...allValues);
+      const max = Math.max(...allValues);
+      const y = (v) => m.top + innerH - ((v - min) / Math.max(max - min, 0.0001)) * innerH;
+      const xScale = (v) => m.left + ((v - min) / Math.max(max - min, 0.0001)) * innerW;
+      const spacing = innerW / values.length;
+      const spacingY = innerH / values.length;
+
+      const guides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = min + (max - min) * p;
+        if (vertical) {
+          const py = y(val);
+          return `
+            <line x1="${m.left}" y1="${py}" x2="${w - m.right}" y2="${py}" stroke="#e4eaf2" stroke-width="1"/>
+            <text x="${m.left - 10}" y="${py + 4}" text-anchor="end" font-size="12" fill="#66768b">${formatValue(metricKey, val)}</text>
+          `;
+        }
+        const px = xScale(val);
+        return `
+          <line x1="${px}" y1="${m.top}" x2="${px}" y2="${h - m.bottom}" stroke="#e4eaf2" stroke-width="1"/>
+          <text x="${px}" y="${h - m.bottom + 18}" text-anchor="middle" font-size="12" fill="#66768b">${formatValue(metricKey, val)}</text>
+        `;
+      }).join("");
+
+      const boxes = values.map((area, i) => {
+        const q1 = quartile(area.values, 0.25);
+        const q2 = quartile(area.values, 0.5);
+        const q3 = quartile(area.values, 0.75);
+        const low = area.values[0];
+        const high = area.values[area.values.length - 1];
+        const centerX = m.left + spacing * i + spacing / 2;
+        const centerY = m.top + spacingY * i + spacingY / 2;
+        const boxWidth = Math.min(64, spacing * 0.5);
+        const boxHeight = Math.min(42, spacingY * 0.5);
+        const activeOpacity = state.activeAreas.has(area.key) ? 1 : 0.22;
+        if (vertical) {
+          return `
+            <line x1="${centerX}" y1="${y(low)}" x2="${centerX}" y2="${y(high)}" stroke="${area.color}" stroke-width="3" opacity="${activeOpacity}"/>
+            <rect x="${centerX - boxWidth / 2}" y="${y(q3)}" width="${boxWidth}" height="${Math.max(8, y(q1) - y(q3))}" rx="14" fill="${area.color}" opacity="${activeOpacity}"/>
+            <line x1="${centerX - boxWidth / 2}" y1="${y(q2)}" x2="${centerX + boxWidth / 2}" y2="${y(q2)}" stroke="#ffffff" stroke-width="3" opacity="${activeOpacity}"/>
+            <line x1="${centerX - 16}" y1="${y(low)}" x2="${centerX + 16}" y2="${y(low)}" stroke="${area.color}" stroke-width="3" opacity="${activeOpacity}"/>
+            <line x1="${centerX - 16}" y1="${y(high)}" x2="${centerX + 16}" y2="${y(high)}" stroke="${area.color}" stroke-width="3" opacity="${activeOpacity}"/>
+            <text x="${centerX}" y="${h - 14}" text-anchor="middle" font-size="12" fill="#66768b">${area.key}</text>
+          `;
+        }
+        return `
+          <line x1="${xScale(low)}" y1="${centerY}" x2="${xScale(high)}" y2="${centerY}" stroke="${area.color}" stroke-width="3" opacity="${activeOpacity}"/>
+          <rect x="${xScale(q1)}" y="${centerY - boxHeight / 2}" width="${Math.max(10, xScale(q3) - xScale(q1))}" height="${boxHeight}" rx="12" fill="${area.color}" opacity="${activeOpacity}"/>
+          <line x1="${xScale(q2)}" y1="${centerY - boxHeight / 2}" x2="${xScale(q2)}" y2="${centerY + boxHeight / 2}" stroke="#ffffff" stroke-width="3" opacity="${activeOpacity}"/>
+          <line x1="${xScale(low)}" y1="${centerY - 12}" x2="${xScale(low)}" y2="${centerY + 12}" stroke="${area.color}" stroke-width="3" opacity="${activeOpacity}"/>
+          <line x1="${xScale(high)}" y1="${centerY - 12}" x2="${xScale(high)}" y2="${centerY + 12}" stroke="${area.color}" stroke-width="3" opacity="${activeOpacity}"/>
+          <text x="${m.left - 14}" y="${centerY + 4}" text-anchor="end" font-size="12" fill="#66768b">${area.key}</text>
+        `;
+      }).join("");
+
+      document.getElementById("barChart").innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" aria-label="Box plot por área">
+          ${guides}
+          ${vertical
+            ? `<line x1="${m.left}" y1="${h - m.bottom}" x2="${w - m.right}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>`
+            : `<line x1="${m.left}" y1="${m.top}" x2="${m.left}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>`
+          }
+          ${boxes}
+        </svg>
+      `;
+    }
+
+    function renderAreaDistributionChart(metricKey) {
+      const seriesByArea = areas.map((area) => ({
+        ...area,
+        values: rows
+          .filter((r) => r.area === area.key)
+          .map((r) => r[metricKey])
+          .sort((a, b) => a - b)
+      }));
+      const allValues = seriesByArea.flatMap((s) => s.values);
+      const w = 480, h = 300, m = { top: 24, right: 18, bottom: 48, left: 52 };
+      const innerW = w - m.left - m.right;
+      const innerH = h - m.top - m.bottom;
+      const min = Math.min(...allValues);
+      const max = Math.max(...allValues);
+      const y = (v) => m.top + innerH - ((v - min) / Math.max(max - min, 0.0001)) * innerH;
+      const spacing = innerW / seriesByArea.length;
+
+      const guides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = min + (max - min) * p;
+        const py = y(val);
+        return `
+          <line x1="${m.left}" y1="${py}" x2="${w - m.right}" y2="${py}" stroke="#e4eaf2" stroke-width="1"/>
+          <text x="${m.left - 10}" y="${py + 4}" text-anchor="end" font-size="12" fill="#66768b">${formatValue(metricKey, val)}</text>
+        `;
+      }).join("");
+
+      const dots = seriesByArea.map((area, i) => {
+        const centerX = m.left + spacing * i + spacing / 2;
+        const activeOpacity = state.activeAreas.has(area.key) ? 0.8 : 0.18;
+        return area.values.map((v, j) => {
+          const jitter = ((j % 5) - 2) * 8;
+          return `<circle cx="${centerX + jitter}" cy="${y(v)}" r="4.5" fill="${area.color}" opacity="${activeOpacity}"/>`;
+        }).join("") + `<text x="${centerX}" y="${h - 14}" text-anchor="middle" font-size="12" fill="#66768b">${area.key}</text>`;
+      }).join("");
+
+      document.getElementById("barChart").innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" aria-label="Distribuciones por área">
+          ${guides}
+          <line x1="${m.left}" y1="${h - m.bottom}" x2="${w - m.right}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>
+          ${dots}
+        </svg>
+      `;
+    }
+
+    function renderDistributionChart(metricKey) {
+      const values = rows
+        .filter((r) => state.activeAreas.has(r.area))
+        .map((r) => r[metricKey])
+        .sort((a, b) => a - b);
+      const w = 620, h = 300, m = { top: 24, right: 24, bottom: 44, left: 46 };
+      const innerW = w - m.left - m.right;
+      const innerH = h - m.top - m.bottom;
+      const min = values[0];
+      const max = values[values.length - 1];
+      const avg = mean(values);
+      const med = median(values);
+      const x = (i) => m.left + (i / Math.max(values.length - 1, 1)) * innerW;
+      const y = (v) => m.top + innerH - ((v - min) / Math.max(max - min, 0.0001)) * innerH;
+      const guides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = min + (max - min) * p;
+        const py = y(val);
+        return `
+          <line x1="${m.left}" y1="${py}" x2="${w - m.right}" y2="${py}" stroke="#e4eaf2" stroke-width="1"/>
+          <text x="${m.left - 10}" y="${py + 4}" text-anchor="end" font-size="12" fill="#66768b">${formatValue(metricKey, val)}</text>
+        `;
+      }).join("");
+      const xTicks = [0, 0.33, 0.66, 1].map((p, idx) => {
+        const xi = m.left + innerW * p;
+        const label = idx === 0 ? "Inicio" : idx === 3 ? "Final" : `Tramo ${idx + 1}`;
+        return `
+          <line x1="${xi}" y1="${h - m.bottom}" x2="${xi}" y2="${h - m.bottom + 6}" stroke="#bfc9d8" stroke-width="1.5"/>
+          <text x="${xi}" y="${h - 14}" text-anchor="middle" font-size="12" fill="#66768b">${label}</text>
+        `;
+      }).join("");
+
+      const dots = values.map((v, i) =>
+        `<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="#138a8a" opacity="0.78"/>`
+      ).join("");
+
+      const avgY = y(avg);
+      const medY = y(med);
+
+      document.getElementById("distributionChart").innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" aria-label="Distribución">
+          ${guides}
+          <line x1="${m.left}" y1="${h - m.bottom}" x2="${w - m.right}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>
+          <line x1="${m.left}" y1="${avgY}" x2="${w - m.right}" y2="${avgY}" stroke="#cf7a1d" stroke-dasharray="8 8" stroke-width="2"/>
+          <line x1="${m.left}" y1="${medY}" x2="${w - m.right}" y2="${medY}" stroke="#b94b68" stroke-dasharray="6 6" stroke-width="2"/>
+          ${dots}
+          <text x="${w - m.right}" y="${avgY - 8}" text-anchor="end" font-size="12" fill="#cf7a1d">Media: ${formatValue(metricKey, avg)}</text>
+          <text x="${w - m.right}" y="${medY - 8}" text-anchor="end" font-size="12" fill="#b94b68">Mediana: ${formatValue(metricKey, med)}</text>
+          ${xTicks}
+          <text x="${w / 2}" y="${h - 2}" text-anchor="middle" font-size="12" fill="#66768b">Valores ordenados de ${metrics[metricKey].label}</text>
+          <text x="16" y="${h / 2}" text-anchor="middle" font-size="12" fill="#66768b" transform="rotate(-90 16 ${h / 2})">${metrics[metricKey].label}</text>
+        </svg>
+      `;
+    }
+
+    function renderScatterChart(xMetric, yMetric) {
+      const scatterRows = rows.filter((r) => {
+        const areaOK = state.activeAreas.has(r.area);
+        const focusOK = state.scatterFocus === "all" ? true : r.area === state.scatterFocus;
+        return areaOK && focusOK;
+      });
+      const xValues = scatterRows.map((r) => r[xMetric]);
+      const yValues = scatterRows.map((r) => r[yMetric]);
+      const showMarginals = state.showMarginals;
+      const w = 620, h = 320;
+      const m = showMarginals
+        ? { top: 42, right: 60, bottom: 56, left: 56 }
+        : { top: 24, right: 24, bottom: 56, left: 56 };
+      const innerW = w - m.left - m.right;
+      const innerH = h - m.top - m.bottom;
+      const xMin = Math.min(...xValues), xMax = Math.max(...xValues);
+      const yMin = Math.min(...yValues), yMax = Math.max(...yValues);
+      const x = (v) => m.left + ((v - xMin) / Math.max(xMax - xMin, 0.0001)) * innerW;
+      const y = (v) => m.top + innerH - ((v - yMin) / Math.max(yMax - yMin, 0.0001)) * innerH;
+      const xGuides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = xMin + (xMax - xMin) * p;
+        const px = x(val);
+        return `
+          <line x1="${px}" y1="${m.top}" x2="${px}" y2="${h - m.bottom}" stroke="#eef2f7" stroke-width="1"/>
+          <text x="${px}" y="${h - m.bottom + 18}" text-anchor="middle" font-size="12" fill="#66768b">${formatValue(xMetric, val)}</text>
+        `;
+      }).join("");
+      const yGuides = [0, 0.25, 0.5, 0.75, 1].map((p) => {
+        const val = yMin + (yMax - yMin) * p;
+        const py = y(val);
+        return `
+          <line x1="${m.left}" y1="${py}" x2="${w - m.right}" y2="${py}" stroke="#eef2f7" stroke-width="1"/>
+          <text x="${m.left - 10}" y="${py + 4}" text-anchor="end" font-size="12" fill="#66768b">${formatValue(yMetric, val)}</text>
+        `;
+      }).join("");
+
+      const circles = scatterRows.map((row) => {
+        const color = state.scatterColor === "month"
+          ? `hsl(${210 + row.monthIndex * 10}, 65%, 55%)`
+          : areas.find((a) => a.key === row.area).color;
+        return `<circle cx="${x(row[xMetric])}" cy="${y(row[yMetric])}" r="5" fill="${color}" opacity="0.78"/>`;
+      }).join("");
+
+      let marginals = "";
+      if (showMarginals) {
+        const bins = 6;
+        const xBinCounts = Array.from({ length: bins }, () => 0);
+        const yBinCounts = Array.from({ length: bins }, () => 0);
+        scatterRows.forEach((row) => {
+          const xi = Math.min(bins - 1, Math.floor(((row[xMetric] - xMin) / Math.max(xMax - xMin, 0.0001)) * bins));
+          const yi = Math.min(bins - 1, Math.floor(((row[yMetric] - yMin) / Math.max(yMax - yMin, 0.0001)) * bins));
+          xBinCounts[xi] += 1;
+          yBinCounts[yi] += 1;
+        });
+        const topHeight = 26;
+        const rightWidth = 30;
+        const xBars = xBinCounts.map((count, i) => {
+          const bw = innerW / bins - 6;
+          const bh = (count / Math.max(...xBinCounts)) * topHeight;
+          return `<rect x="${m.left + i * (innerW / bins) + 3}" y="${m.top - bh - 8}" width="${bw}" height="${bh}" fill="rgba(47,114,214,0.35)" rx="4"/>`;
+        }).join("");
+        const yBars = yBinCounts.map((count, i) => {
+          const bw = (count / Math.max(...yBinCounts)) * rightWidth;
+          const bh = innerH / bins - 6;
+          return `<rect x="${w - m.right + 8}" y="${m.top + innerH - ((i + 1) * (innerH / bins)) + 3}" width="${bw}" height="${bh}" fill="rgba(185,75,104,0.28)" rx="4"/>`;
+        }).join("");
+        marginals = xBars + yBars;
+      }
+
+      document.getElementById("scatterChart").innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" aria-label="Cruce exploratorio">
+          ${xGuides}
+          ${yGuides}
+          <line x1="${m.left}" y1="${h - m.bottom}" x2="${w - m.right}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>
+          <line x1="${m.left}" y1="${m.top}" x2="${m.left}" y2="${h - m.bottom}" stroke="#bfc9d8" stroke-width="1.5"/>
+          ${marginals}
+          ${circles}
+          <text x="${(w / 2)}" y="${h - 2}" text-anchor="middle" font-size="13" fill="#66768b">${metrics[xMetric].label}</text>
+          <text x="16" y="${h / 2}" text-anchor="middle" font-size="13" fill="#66768b" transform="rotate(-90 16 ${h / 2})">${metrics[yMetric].label}</text>
+        </svg>
+      `;
+
+      if (state.scatterColor === "month") {
+        document.getElementById("areaLegend").innerHTML = ["Ene-Mar", "Abr-Jun", "Jul-Sep", "Oct-Dic"].map((label, idx) => {
+          const color = `hsl(${210 + idx * 30}, 65%, 55%)`;
+          return `<div class="legend-item"><span class="legend-swatch" style="background:${color}"></span><span>${label}</span></div>`;
+        }).join("");
+      } else {
+        document.getElementById("areaLegend").innerHTML = areas
+          .filter((area) => state.activeAreas.has(area.key))
+          .filter((area) => state.scatterFocus === "all" ? true : area.key === state.scatterFocus)
+          .map((area) => `
+            <div class="legend-item">
+              <span class="legend-swatch" style="background:${area.color}"></span>
+              <span>${area.key}</span>
+            </div>
+          `).join("");
+      }
+    }
+
+    function updateMetrics() {
+      const series = buildSeries(state.metric, state.activeAreas);
+      const summaryMap = {
+        mean: mean(series),
+        median: median(series),
+        latest: series[series.length - 1],
+        max: Math.max(...series)
+      };
+
+      const summaryValue = summaryMap[state.summary];
+      const latest = series[series.length - 1];
+      const spread = Math.max(...series) - Math.min(...series);
+
+      document.getElementById("summaryValue").textContent = formatValue(state.metric, summaryValue);
+      document.getElementById("summaryMeta").textContent = `${metrics[state.metric].label} | ${summarySelect.options[summarySelect.selectedIndex].text}`;
+
+      document.getElementById("latestValue").textContent = formatValue(state.metric, latest);
+      document.getElementById("latestMeta").textContent = `Valor de ${months[months.length - 1]} para las áreas seleccionadas`;
+
+      document.getElementById("spreadValue").textContent = formatValue(state.metric, spread);
+      document.getElementById("spreadMeta").textContent = "Diferencia entre el valor más alto y el más bajo del año";
+
+      const headline = spread > summaryValue * 0.35
+        ? "La lectura cambia bastante cuando abrimos la variación detrás del KPI."
+        : "El indicador se ve relativamente estable, pero igual conviene abrir su distribución.";
+      document.getElementById("headlineInsight").textContent = headline;
+
+      const monthRows = rows.filter((r) => r.monthIndex === state.monthIndex);
+      const activeMonthRows = monthRows.filter((r) => state.activeAreas.has(r.area));
+      const monthBest = activeMonthRows.slice().sort((a, b) => b[state.metric] - a[state.metric])[0];
+      const monthWorst = activeMonthRows.slice().sort((a, b) => a[state.metric] - b[state.metric])[0];
+
+      const insightItems = [
+        `Con la métrica <strong>${metrics[state.metric].label}</strong>, el cálculo seleccionado entrega <strong>${formatValue(state.metric, summaryValue)}</strong> para las áreas activas.`,
+        `En <strong>${months[state.monthIndex]}</strong>, el valor más alto lo muestra <strong>${monthBest.area}</strong> con <strong>${formatValue(state.metric, monthBest[state.metric])}</strong>.`,
+        `En el mismo mes, el valor más bajo lo muestra <strong>${monthWorst.area}</strong> con <strong>${formatValue(state.metric, monthWorst[state.metric])}</strong>.`,
+        `Abrir la distribución ayuda a ver si el promedio representa bien el fenómeno o si está escondiendo dispersión, picos o meses atípicos.`,
+        `El cruce entre <strong>${metrics[state.xMetric].label}</strong> y <strong>${metrics[state.yMetric].label}</strong> puede sugerir patrones útiles, pero todavía no demuestra causalidad.`
+      ];
+
+      document.getElementById("insightList").innerHTML = insightItems.map((item) => `<li>${item}</li>`).join("");
+    }
+
+    function render() {
+      const series = buildSeries(state.metric, state.activeAreas);
+      updateMetrics();
+      renderLineChart(series, state.metric);
+      if (state.compareView === "box") {
+        renderBoxPlotChart(state.metric);
+      } else if (state.compareView === "distribution") {
+        renderAreaDistributionChart(state.metric);
+      } else {
+        renderBarChart(state.metric);
+      }
+      renderDistributionChart(state.metric);
+      renderScatterChart(state.xMetric, state.yMetric);
+      updatePromptBox();
+    }
+
+    metricSelect.addEventListener("change", (e) => {
+      state.metric = e.target.value;
+      render();
+    });
+
+    summarySelect.addEventListener("change", (e) => {
+      state.summary = e.target.value;
+      render();
+    });
+
+    monthSelect.addEventListener("change", (e) => {
+      state.monthIndex = Number(e.target.value);
+      render();
+    });
+
+    compareViewSelect.addEventListener("change", (e) => {
+      state.compareView = e.target.value;
+      boxOrientationSelect.disabled = state.compareView !== "box";
+      render();
+    });
+
+    boxOrientationSelect.addEventListener("change", (e) => {
+      state.boxOrientation = e.target.value;
+      render();
+    });
+
+    xMetricSelect.addEventListener("change", (e) => {
+      state.xMetric = e.target.value;
+      render();
+    });
+
+    yMetricSelect.addEventListener("change", (e) => {
+      state.yMetric = e.target.value;
+      render();
+    });
+
+    scatterFocusSelect.addEventListener("change", (e) => {
+      state.scatterFocus = e.target.value;
+      render();
+    });
+
+    scatterColorSelect.addEventListener("change", (e) => {
+      state.scatterColor = e.target.value;
+      render();
+    });
+
+    showMarginalsCheckbox.addEventListener("change", (e) => {
+      state.showMarginals = e.target.checked;
+      render();
+    });
+
+    function buildPromptText() {
+      return `Este dashboard se creó con Codex Cowork. Tú puedes hacer algo similar con IA o con código si partes de una tabla simple y una pregunta clara.\n\nQuiero crear un dashboard similar para un curso de introducción a ciencia de datos aplicado a personas.\n\nUsa estos campos: area, month, hires, turnover, training, english, excel.\n\nObjetivo:\n- mostrar un KPI principal con opción de elegir cálculo (promedio, mediana, último valor, máximo)\n- comparar áreas con barras, boxplots o distribuciones por área\n- abrir la distribución detrás del KPI\n- explorar una relación entre dos variables, por ejemplo rotación y capacitación\n- incluir una breve lectura interpretativa para estudiantes\n\nCondiciones:\n- que sea claro y visual\n- que use datos sintéticos o una tabla simple\n- que permita descargar los datos\n- que ayude a mostrar que un promedio puede esconder dispersión y que una relación no implica causalidad`;
+    }
+
+    function updatePromptBox() {
+      promptBox.textContent = buildPromptText();
+    }
+
+    function downloadCSV() {
+      const headers = ["month", "area", "hires", "turnover", "training", "english", "excel"];
+      const csv = [headers.join(",")].concat(
+        rows.map((r) => [r.month, r.area, r.hires, r.turnover, r.training, r.english, r.excel].join(","))
+      ).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "u2_personas_dashboard_datos_sinteticos.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("downloadDataBtn").addEventListener("click", downloadCSV);
+    document.getElementById("togglePromptBtn").addEventListener("click", () => {
+      promptBox.style.display = promptBox.style.display === "block" ? "none" : "block";
+    });
+    document.getElementById("copyPromptBtn").addEventListener("click", async () => {
+      const text = buildPromptText();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (_) {
+        promptBox.style.display = "block";
+      }
+    });
+
+    renderChips();
+    updatePromptBox();
+    boxOrientationSelect.disabled = state.compareView !== "box";
+    render();
+  </script>
+</body>
+</html>
